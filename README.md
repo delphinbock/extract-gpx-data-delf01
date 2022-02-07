@@ -35,7 +35,7 @@ runFunction();
 ```
 
 ## Video installation
-[![Demo video](./youtube1.jpg)](https://www.youtube.com/watch?v=DbIJi81ico4)
+[![Demo video](./youtube.jpg)](https://www.youtube.com/watch?v=DbIJi81ico4)
 
 ## Explanation
 
