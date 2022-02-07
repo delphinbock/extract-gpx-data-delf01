@@ -1,0 +1,1 @@
+declare module 'extract-gpx-data-delf01';
