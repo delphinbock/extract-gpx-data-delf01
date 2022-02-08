@@ -7,6 +7,12 @@
 
 Node module that extract data from gpx file and returns a data JSON object.
 
+Next versions: <br />
+metadata => link and extensions tags<br />
+routes (rte) => name, extensions, rtept, rtept name<br />
+waypoints (wpt) => ele, time, name, sym<br />
+track (trk) => time, cmt, desc, src, number, link, extensions, trkpt name<br />
+
 ## Installation
 1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
 2. Create a gpx files directory at the root of the application.<br />
@@ -42,7 +48,7 @@ runFunction();
 
 You can use a gpx file containing a single track or multiple tracks.<br />
 The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the tracks (stagesTrackData), the information of all the merged tracks (mergeStagesTrackData).<br />
-The main information extracted from the gpx file are the metadata, the altitudes, the positions, the types of tracks, the maximum and minimum altitudes, the names of the tracks.
+The main information extracted from the gpx file are the metadata, distances (in meter), altitudes, positions, types of tracks, maximum and minimum altitudes,  names of the tracks.
 
 ## Example returned object of gpx data in json format
 
@@ -62,12 +68,18 @@ The main information extracted from the gpx file are the metadata, the altitudes
             id: 1,
             name: 'Paris / Massy',
             type: 'cycling',
-            positions: [
+            positionsArrObj: [
                 { lat: 48.855337, lon: 2.345867 },
                 { lat: 48.852936, lon: 2.343239 },
                 { lat: 48.853162, lon: 2.343176 },
                 { lat: 48.853212, lon: 2.343104 }
             ],
+            positionsArrArr: [
+                [48.855337, 2.345867],
+                [48.852936, 2.343239],
+                [48.853162, 2.343176]
+            ],
+            distance: 15483.6354480031,
             elevations: {
                 full: [
                     50.4, 50.42, 50.46, 50.55, 50.66, 50.75,
