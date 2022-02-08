@@ -79,7 +79,10 @@ The main information extracted from the gpx file are the metadata, distances (in
                 [48.852936, 2.343239],
                 [48.853162, 2.343176]
             ],
-            distance: 15483,
+            distance: {
+                meters: 15483,
+                yards: 9,620
+            },
             elevations: {
                 full: [
                     50.4, 50.42, 50.46, 50.55, 50.66, 50.75,
@@ -137,6 +140,13 @@ The main information extracted from the gpx file are the metadata, distances (in
             { id: 4, type: null },
             { id: 5, type: null }
         ],
+        distances: {
+            full: { meters: 17053, yards: 18649 },
+            distancesArrObj: [
+                { id: 1, distance: { meters: 17053, miles: 18649 } },
+                { id: 2, distance: { meters: 23412, miles: 25603 } }
+            ],
+        },
         positions: {
             full: [
                 { lat: 48.855337, lon: 2.345867 },
@@ -150,7 +160,7 @@ The main information extracted from the gpx file are the metadata, distances (in
                 { lat: 48.853307, lon: 2.342398 },
                 { lat: 48.853334, lon: 2.34199 },
                 { lat: 48.853354, lon: 2.341581 }
-            ]
+            ],
             positionsArrObj: [
                 {
                     id: 25,
