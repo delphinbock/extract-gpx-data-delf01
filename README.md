@@ -79,7 +79,7 @@ The main information extracted from the gpx file are the metadata, distances (in
                 [48.852936, 2.343239],
                 [48.853162, 2.343176]
             ],
-            distance: 15483.6354480031,
+            distance: 15483,
             elevations: {
                 full: [
                     50.4, 50.42, 50.46, 50.55, 50.66, 50.75,
