@@ -13,6 +13,7 @@ Node module that extract data from gpx file and returns a data JSON object.
 For example, create a directory named "gpx_files and/or a subdirectory named "tracks".<br /><br />
 ![image](./demo1.jpg)<br />
 3. Put gpx files in this directory or subdirectory.<br />
+Here is a multiple tracks gpx file example: [gpx file](https://github.com/delphinbock/gpx_veloscenie/blob/main/veloscenie.gpx)<br />
 4. Use the following code. Write the path name of the gpx files folder like in the code's example.<br />
 For examples: "directory/subdirectory/gpxName.gpx" or "directory/gpxName.gpx".<br />
 ```javascript
