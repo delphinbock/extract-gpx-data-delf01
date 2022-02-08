@@ -141,7 +141,7 @@ The main information extracted from the gpx file are the metadata, distances (in
             { id: 5, type: null }
         ],
         distances: {
-            full: { meters: 17053, yards: 18649 },
+            full: { meters: 490414, yards: 536323 },
             distancesArrObj: [
                 { id: 1, distance: { meters: 17053, yards: 18649 } },
                 { id: 2, distance: { meters: 23412, yards: 25603 } }
