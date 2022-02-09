@@ -5,7 +5,6 @@
 [![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=style=flat-square)](https://www.topografix.com/gpx.asp)
 [![Documentation](https://img.shields.io/badge/Documentation-github-yellow.svg?style=style=flat-square)](https://github.com/delphinbock/extract-gpx-data-delf01/blob/main/README.md)
-[![Test](https://img.shields.io/badge/Test-Mocha-brightgreen.svg?style=style=flat-square)](https://mochajs.org/)
 
 Node module that extract data from gpx file and returns a data JSON object.
 
