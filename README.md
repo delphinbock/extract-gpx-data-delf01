@@ -1,5 +1,6 @@
 ![image](./extract-gpx-data-delf01.jpg)
 
+[![npm version](https://badge.fury.io/js/extract-gpx-data-delf01.svg)](https://badge.fury.io/js/extract-gpx-data-delf01)
 [![Node version](https://img.shields.io/badge/node->=14.18.0-orange.svg?style=style=flat-square)](https://nodejs.org/en/about/releases/)
 [![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=style=flat-square)](https://www.topografix.com/gpx.asp)
