@@ -1,0 +1,65 @@
+{
+  "_from": "extract-gpx-data-delf01@^1.0.2",
+  "_id": "extract-gpx-data-delf01@1.0.2",
+  "_inBundle": false,
+  "_integrity": "sha512-1L3X0wX8gJyLLV64Ah8MnJdLnslQ6E70+qrBpYGY7tZMkG3Dn4O0T+STZvDEYtvvPlndt1DsSpRbfpQY1f12ZQ==",
+  "_location": "/extract-gpx-data-delf01",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "extract-gpx-data-delf01@^1.0.2",
+    "name": "extract-gpx-data-delf01",
+    "escapedName": "extract-gpx-data-delf01",
+    "rawSpec": "^1.0.2",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.2"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/extract-gpx-data-delf01/-/extract-gpx-data-delf01-1.0.2.tgz",
+  "_shasum": "93132f1302ef1545354af6bca2b5e72d424f0e70",
+  "_spec": "extract-gpx-data-delf01@^1.0.2",
+  "_where": "D:\\@node\\demo",
+  "author": {
+    "name": "Delphin Bock",
+    "email": "delf01.development@gmail.com"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Extract data from gpx file",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [
+    "extract",
+    "gpx",
+    "data",
+    "positions",
+    "elevations",
+    "distance",
+    "max",
+    "min",
+    "average"
+  ],
+  "license": "GPL-3.0-or-later",
+  "main": "extract-gpx-data-delf01.js",
+  "name": "extract-gpx-data-delf01",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/delphinbock/extract-gpx-data-delf01/tree/main"
+  },
+  "scripts": {
+    "test": "jest",
+    "build": "node build/build.js"
+  },
+  "version": "1.1.8",
+  "devDependencies": {
+    "jest": "^27.5.1"
+  },
+  "dependencies": {
+    "colors": "^1.4.0"
+  }
+}
