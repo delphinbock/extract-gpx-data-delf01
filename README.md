@@ -1,17 +1,18 @@
 ![image](./extract-gpx-data-delf01.jpg)
 
-[![Node version](https://img.shields.io/badge/node->=14.18.0-orange.svg?style=for-the-badge)](https://nodejs.org/en/about/releases/)
-[![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Documentation](https://img.shields.io/badge/Documentation-github-yellow.svg?style=for-the-badge)](https://github.com/delphinbock/extract-gpx-data-delf01/blob/main/README.md)
-[![Test](https://img.shields.io/badge/Test-Mocha-brightgreen.svg?style=for-the-badge)](https://mochajs.org/)
+[![Node version](https://img.shields.io/badge/node->=14.18.0-orange.svg?style=flat-square)](https://nodejs.org/en/about/releases/)
+[![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=flat-square)](https://www.topografix.com/gpx.asp)
+[![Documentation](https://img.shields.io/badge/Documentation-github-yellow.svg?style=flat-square)](https://github.com/delphinbock/extract-gpx-data-delf01/blob/main/README.md)
+[![Test](https://img.shields.io/badge/Test-Mocha-brightgreen.svg?style=style=flat-square)](https://mochajs.org/)
 
 Node module that extract data from gpx file and returns a data JSON object.
 
 Next versions: <br />
-metadata => link and extensions tags<br />
-routes (rte) => name, extensions, rtept, rtept name<br />
+metadata => link and extension tags<br />
+routes (rte) => name, extension, rtept, rtept name<br />
 waypoints (wpt) => ele, time, name, sym<br />
-track (trk) => time, cmt, desc, src, number, link, extensions, trkpt name<br />
+track (trk) => time, cmt, desc, src, number, link, extension, trkpt name<br />
 
 ## Installation
 1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
