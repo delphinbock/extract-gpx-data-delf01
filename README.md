@@ -9,9 +9,9 @@
 Node module that extract data from gpx file and returns a data JSON object.
 
 Next versions: <br />
-metadata => link and extension tags<br />
+metadata => extension tag<br />
 routes (rte) tag<br />
-For track (trk) => link<br />
+Track (trk) => link tag<br />
 
 ## Installation
 1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
@@ -62,7 +62,18 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
         gpxFileAuthorName: 'Delphin Bock',
         gpxFileCopyright: 'GNU General Public License',
         gpxFileCreationDatetime: '2022-02-01 23:36:36',
-        gpxFileKeywords: 'veloscenie, velo, gps, gpx, stages, track'
+        gpxFileKeywords: 'veloscenie, velo, gps, gpx, stages, track',
+        gpxFileBounds: {
+            minlat: '42.960882000',
+            minlon: '0.089178000',
+            maxlat: '42.968482000',
+            maxlon: '0.101709000'
+        },
+        gpxFileLink: {
+            href: 'https://mywebsite.com',
+            text: 'My Website',
+            type: 'cycling'
+        }
     },
     wayPoints: [
         {
