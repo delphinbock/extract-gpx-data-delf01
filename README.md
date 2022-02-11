@@ -6,12 +6,12 @@
 [![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=style=flat-square)](https://www.topografix.com/gpx.asp)
 [![Documentation](https://img.shields.io/badge/Documentation-github-yellow.svg?style=style=flat-square)](https://github.com/delphinbock/extract-gpx-data-delf01/blob/main/README.md)
 
-Node module that extract data from gpx file and returns a data JSON object.
+Node module that extract data from gpx file and returns a data JSON object.<br />
+
+You can report issues related to the module: [issues](https://github.com/delphinbock/extract-gpx-data-delf01/issues)<br />
 
 Next versions: <br />
-metadata => extension tag<br />
 routes (rte) tag<br />
-Track (trk) => link tag<br />
 
 ## Installation
 1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
@@ -30,7 +30,7 @@ const extractGpxDataDelf01 = require('extract-gpx-data-delf01');
 const runFunction = async () => {
 
     // Get gpx data file
-    let gpxData = await extractGpxDataDelf01.extractGpxData('gpx_files/tracks/veloscenie.gpx');
+    let gpxData = await extractGpxDataDelf01.extractGpxData('gpx_files/gpxFilename.gpx');
 
     // Console message
     console.log(gpxData);
@@ -48,7 +48,7 @@ runFunction();
 
 You can use a gpx file containing a single track or multiple tracks.<br />
 The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the tracks (stagesTrackData), the information of all way points (wayPoints), the information of all the merged tracks (mergeStagesTrackData).<br />
-The main information extracted from the gpx file are the metadata, distances (meter, yard), altitudes, positions, types of tracks, maximum and minimum altitudes, names of the tracks.<br />
+The main information extracted from the gpx file are the metadata, distances (meter, yard), elevations, positions, types of tracks, maximum and minimum altitudes, names of the tracks.<br />
 Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
 
 ## Example returned object of gpx data in json format
@@ -63,11 +63,12 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
         gpxFileCopyright: 'GNU General Public License',
         gpxFileCreationDatetime: '2022-02-01 23:36:36',
         gpxFileKeywords: 'veloscenie, velo, gps, gpx, stages, track',
+        gpxFileExtensions: '<myns:town>Some town here</myns:town>',
         gpxFileBounds: {
-            minlat: '42.960882000',
-            minlon: '0.089178000',
-            maxlat: '42.968482000',
-            maxlon: '0.101709000'
+            minlat: 42.960882000,
+            minlon: 0.089178000,
+            maxlat: 42.968482000,
+            maxlon: 0.101709000
         },
         gpxFileLink: {
             href: 'https://mywebsite.com',
@@ -100,7 +101,12 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             dgpsid: 142,
             extensions: '<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>',
             speed: 4.23,
-            course: 45.2
+            course: 45.2,
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            }
         },
         {
             id: 2,
@@ -126,7 +132,12 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             dgpsid: 141,
             extensions: '<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>',
             speed: 4.23,
-            course: 45.2
+            course: 45.2,
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            }
         }
     ],
     stagesTrackData : [
@@ -140,6 +151,12 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             url: 'URL associated with the track',
             urlname: 'text to display on the hyperlink',
             number: 1,
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            },
+            extensions: '<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>',
             distance: {
                 meters: 15483,
                 yards: 9.620
@@ -191,9 +208,6 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             },
             srcs: {
                 full: ['Garmin eTrex Venture', 'Garmin eTrex Venture', null]
-            },
-            links: {
-                full: ['test', 'test', null]
             },
             urls: {
                 full: ['www.mountwashington.org', 'www.mountwashington.org', null]
@@ -248,6 +262,11 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             url: 'URL associated with the track',
             urlname: 'text to display on the hyperlink',
             number: 1,
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            },
             distance: {
                 meters: 15483,
                 yards: 9.620
@@ -299,9 +318,6 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             },
             srcs: {
                 full: ['Garmin eTrex Venture', 'Garmin eTrex Venture', null]
-            },
-            links: {
-                full: ['test', 'test', null]
             },
             urls: {
                 full: ['www.mountwashington.org', 'www.mountwashington.org', null]
@@ -362,6 +378,62 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             { id: 3, type: null },
             { id: 4, type: null },
             { id: 5, type: null }
+        ],
+        cmtArrObj: [
+            { id: 0, cmt: 'watch out for bears' },
+            { id: 1, cmt: null },
+            { id: 2, cmt: null },
+            { id: 3, cmt: null },
+            { id: 4, cmt: null },
+            { id: 5, cmt: null }
+        ],
+        descArrObj: [
+            { id: 0, desc: 'wild landscape' },
+            { id: 1, desc: null },
+            { id: 2, desc: null },
+            { id: 3, desc: null },
+            { id: 4, desc: null },
+            { id: 5, desc: null }
+        ],
+        srcArrObj: [
+            { id: 0, src: 'Garmin eTrex Venture' },
+            { id: 1, src: null },
+            { id: 2, src: null },
+            { id: 3, src: null },
+            { id: 4, src: null },
+            { id: 5, src: null }
+        ],
+        urlArrObj: [
+            { id: 0, url: 'http://www.mysite.com' },
+            { id: 1, url: null },
+            { id: 2, url: null },
+            { id: 3, url: null },
+            { id: 4, url: null },
+            { id: 5, url: null }
+        ],
+        urlnameArrObj: [
+            { id: 0, urlname: 'My website' },
+            { id: 1, urlname: null },
+            { id: 2, urlname: null },
+            { id: 3, urlname: null },
+            { id: 4, urlname: null },
+            { id: 5, urlname: null }
+        ],
+        numberArrObj: [
+            { id: 0, number: 5 },
+            { id: 1, number: null },
+            { id: 2, number: null },
+            { id: 3, number: null },
+            { id: 4, number: null },
+            { id: 5, number: null }
+        ],
+        linkArrObj: [
+            { id: 0, link: { <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link> },
+            { id: 1, link: null },
+            { id: 2, link: null },
+            { id: 3, link: null },
+            { id: 4, link: null },
+            { id: 5, link: null }
         ],
         distances: {
             full: { meters: 490414, yards: 536323 },
