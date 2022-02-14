@@ -10,9 +10,6 @@ Node module that extract data from gpx file and returns a data JSON object.<br /
 
 You can report issues related to the module: [issues](https://github.com/delphinbock/extract-gpx-data-delf01/issues)<br />
 
-Next versions: <br />
-routes (rte) tag<br />
-
 ## Installation
 1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
 2. Create a gpx files directory at the root of the application.<br />
@@ -30,7 +27,7 @@ const extractGpxDataDelf01 = require('extract-gpx-data-delf01');
 const runFunction = async () => {
 
     // Get gpx data file
-    let gpxData = await extractGpxDataDelf01.extractGpxData('gpx_files/gpxFilename.gpx');
+    let gpxData = await extractGpxDataDelf01.extractGpxData('gpx_files/veloscenie.gpx');
 
     // Console message
     console.log(gpxData);
@@ -140,9 +137,233 @@ Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
             }
         }
     ],
-    stagesTrackData : [
+    routes: [
+        {
+            id: 0,
+            name: 'route name',
+            type: 'cycling',
+            cmt: 'easy route',
+            desc: 'great route in wild landscape',
+            src: 'Garmin eTrex Venture',
+            url: 'https://www.ot-montsaintmichel.com/',
+            urlname: 'Visit Mont Saint-Michel website',
+            number: '0',
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            },
+            extensions: '<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>',
+            distance: {
+                meters: 15483,
+                yards: 9.620
+            },
+            elevations: {
+                full: [
+                    50.4, 50.42, 50.46, 50.55, 50.66, 50.75,
+                    51.08, 51.22, 51.19, 51.49, 51.42, 50.73,
+                    51.22,  51.9, 53.05, 54.55, 55.96, 57.28,
+                    59.63, 59.95, 60.41, 60.87, 61.46, 62.06,
+                    62.86,  62.6, 62.21, 62.13, 62.05, 61.96,
+                    62.7, 62.84, 63.03, 63.32, 63.57, 63.79
+                ],
+                min: 22.4,
+                max 633.7,
+                cumulativePositiveElevation: 567.6,
+                cumulativeNegativeElevation: -345.6
+            },
+            positions: {
+                positionsArrObj: [
+                    { lat: 48.855337, lon: 2.345867 },
+                    { lat: 48.852936, lon: 2.343239 },
+                    { lat: 48.853162, lon: 2.343176 },
+                    { lat: 48.853212, lon: 2.343104 }
+                ],
+                positionsArrArr: [
+                    [48.855337, 2.345867],
+                    [48.852936, 2.343239],
+                    [48.853162, 2.343176]
+                ]
+            },
+            times: {
+                full: ['2022-02-02', '2022-02-03', '2022-02-03']
+            },
+            magvars: {
+                full: ['-16.2', '-16.2', '-16.2']
+            },
+            geoidheights: {
+                full: ['-16.2', '-16.2', '-16.2']
+            },
+            names: {
+                full: ['DAVISTRAIL', 'DAVISTRAIL', null]
+            },
+            cmts: {
+                full: ['MT WASHINGTON', 'MT WASHINGTON', null]
+            },
+            descs: {
+                full: ['Junction with Davis Trail', 'Junction with Davis Trail', null]
+            },
+            srcs: {
+                full: ['Garmin eTrex Venture', 'Garmin eTrex Venture', null]
+            },
+            urls: {
+                full: ['www.mountwashington.org', 'www.mountwashington.org', null]
+            },
+            urlnames: {
+                full: ['Visit my New Hampshire hiking website!', 'Visit my New Hampshire hiking website!', null]
+            },
+            syms: {
+                full: ['Scenic Area', 'Scenic Area', null]
+            },
+            types: {
+                full: ['cycling', 'cycling', null]
+            },
+            fixs: {
+                full: ['2d', '2d', null]
+            },
+            sats: {
+                full: ['8', '8', null]
+            },
+            hdops: {
+                full: ['1.4', '1.4', null]
+            },
+            vdops: {
+                full: ['3.2', '3.2', null]
+            },
+            pdops: {
+                full: ['1.4', '1.4', null]
+            },
+            ageofdgpsdatas: {
+                full: ['21', '21', null]
+            },
+            dgpsids: {
+                full: ['142', '142', null]
+            },
+            extensionss: {
+                full: ['<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>', '<wptx1:WaypointExtension><wptx1:Samples>4</wptx1:Samples></wptx1:WaypointExtension>', null]
+            },
+            speeds: {
+                full: ['4.23', '4.23', null]
+            },
+            courses: {
+                full: ['45.2', '45.2', null]
+            }
+        },
         {
             id: 1,
+            name: 'Alençon route',
+            type: 'cycling',
+            cmt: 'hard route',
+            desc: 'in city',
+            src: 'Garmin eTrex Venture',
+            url: 'https://www.alencon.com/',
+            urlname: 'Visit Alençon website',
+            number: '1',
+            link: {
+                href: 'https://mywebsite.com',
+                text: 'My Website',
+                type: 'cycling'
+            },
+            extensions: '<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>',
+            distance: {
+                meters: 15483,
+                yards: 9.620
+            },
+            elevations: {
+                full: [
+                    50.4, 50.42, 50.46, 50.55, 50.66, 50.75,
+                    51.08, 51.22, 51.19, 51.49, 51.42, 50.73,
+                    51.22,  51.9, 53.05, 54.55, 55.96, 57.28,
+                    59.63, 59.95, 60.41, 60.87, 61.46, 62.06,
+                    62.86,  62.6, 62.21, 62.13, 62.05, 61.96,
+                    62.7, 62.84, 63.03, 63.32, 63.57, 63.79
+                ],
+                min: 22.4,
+                max 633.7,
+                cumulativePositiveElevation: 567.6,
+                cumulativeNegativeElevation: -345.6
+            },
+            positions: {
+                positionsArrObj: [
+                    { lat: 48.855337, lon: 2.345867 },
+                    { lat: 48.852936, lon: 2.343239 },
+                    { lat: 48.853162, lon: 2.343176 },
+                    { lat: 48.853212, lon: 2.343104 }
+                ],
+                positionsArrArr: [
+                    [48.855337, 2.345867],
+                    [48.852936, 2.343239],
+                    [48.853162, 2.343176]
+                ]
+            },
+            times: {
+                full: ['2022-02-02', '2022-02-03', '2022-02-03']
+            },
+            magvars: {
+                full: ['-16.2', '-16.2', '-16.2']
+            },
+            geoidheights: {
+                full: ['-16.2', '-16.2', '-16.2']
+            },
+            names: {
+                full: ['DAVISTRAIL', 'DAVISTRAIL', null]
+            },
+            cmts: {
+                full: ['MT WASHINGTON', 'MT WASHINGTON', null]
+            },
+            descs: {
+                full: ['Junction with Davis Trail', 'Junction with Davis Trail', null]
+            },
+            srcs: {
+                full: ['Garmin eTrex Venture', 'Garmin eTrex Venture', null]
+            },
+            urls: {
+                full: ['www.mountwashington.org', 'www.mountwashington.org', null]
+            },
+            urlnames: {
+                full: ['Visit my New Hampshire hiking website!', 'Visit my New Hampshire hiking website!', null]
+            },
+            syms: {
+                full: ['Scenic Area', 'Scenic Area', null]
+            },
+            types: {
+                full: ['cycling', 'cycling', null]
+            },
+            fixs: {
+                full: ['2d', '2d', null]
+            },
+            sats: {
+                full: ['8', '8', null]
+            },
+            hdops: {
+                full: ['1.4', '1.4', null]
+            },
+            vdops: {
+                full: ['3.2', '3.2', null]
+            },
+            pdops: {
+                full: ['1.4', '1.4', null]
+            },
+            ageofdgpsdatas: {
+                full: ['21', '21', null]
+            },
+            dgpsids: {
+                full: ['142', '142', null]
+            },
+            extensionss: {
+                full: ['<ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude>', '<wptx1:WaypointExtension><wptx1:Samples>4</wptx1:Samples></wptx1:WaypointExtension>', null]
+            },
+            speeds: {
+                full: ['4.23', '4.23', null]
+            },
+            courses: {
+                full: ['45.2', '45.2', null]
+            }
+        }
+    ],
+    stagesTrackData : [
+        {
+            id: 0,
             name: 'Paris / Massy',
             type: 'cycling',
             cmt: 'gps track comment',
