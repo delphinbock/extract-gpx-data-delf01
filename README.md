@@ -16,7 +16,8 @@ You can report issues related to the module: [issues](https://github.com/delphin
 For example, create a directory named "gpx_files" and/or a subdirectory named "tracks".<br /><br />
 ![image](./demo1.jpg)<br />
 3. Put gpx files in this directory or subdirectory.<br />
-Here is a multiple tracks gpx file example: [gpx file](https://github.com/delphinbock/gpx_veloscenie/blob/main/veloscenie.gpx)<br />
+Multiple tracks gpx file example: [multiple tracks gpx file](https://github.com/delphinbock/gpx_veloscenie/blob/main/veloscenie.gpx)<br />
+Complete gpx file to test data extraction: [test gpx file](https://github.com/delphinbock/test_gpx_files/blob/main/test.gpx)<br />
 4. Use the following code. Write the path name of the gpx files folder like in the code's example.<br />
 For examples: "directory/subdirectory/gpxName.gpx" or "directory/gpxName.gpx".<br />
 ```javascript
