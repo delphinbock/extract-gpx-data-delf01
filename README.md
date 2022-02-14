@@ -44,7 +44,7 @@ runFunction();
 ## Explanation
 
 You can use a gpx file containing a single track or multiple tracks.<br />
-The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the tracks (stagesTrackData), the information of all way points (wayPoints), the information of all the merged tracks (mergeStagesTrackData).<br />
+The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the routes (routes), the information on each of the tracks (stagesTrackData), the information of all way points (wayPoints), the information of all the merged tracks (mergeStagesTrackData).<br />
 The main information extracted from the gpx file are the metadata, distances (meter, yard), elevations, positions, types of tracks, maximum and minimum altitudes, names of the tracks.<br />
 Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
 
