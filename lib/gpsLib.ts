@@ -17,11 +17,12 @@ import {
   ReadGpxFile,
   GetStringBetweenIncludedPatterns,
   MergeStagesTrackData,
-  MergeStagesTrackDataReturn,
+  MergeStagesTrack,
   GetString,
   GetLinkTrk,
-  LinkTrkReturn,
-  ExtensionsResult,
+  LinkTrkData,
+  GetExtensions,
+  GetExtensionsData,
   TrackData,
   LinkData,
   RouteData,
@@ -140,11 +141,11 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
 }
 
 // Merge all stages track
-const mergeStagesTrackData: MergeStagesTrackData = async (stagesTrackArr) => {
+const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Initialize the merged data object
-      const mergeStagesTrackData: MergeStagesTrackDataReturn = {
+      const mergeStagesTrackData: MergeStagesTrackData = {
         namesArrObj: [],
         typeArrObj: [],
         cmtArrObj: [],
@@ -333,19 +334,19 @@ const getLinkTrk: GetLinkTrk = async (str) => {
 };
 
 // Get extensions tag
-const getExtensions = async (str: string, pattern1: string, pattern2: string): Promise<ExtensionsResult[]> => {
-  return new Promise<ExtensionsResult[]>(async (resolve, reject) => {
+const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      // Regex to get string between tags
-      const regex = new RegExp(`${pattern1}(.*?)${pattern2}`, 'g');
+      // Convert pattern1 and pattern2 to strings if they are regular expressions
+      const regexStr = new RegExp(`${(pattern1 instanceof RegExp) ? pattern1.source : pattern1}(.*?)${(pattern2 instanceof RegExp) ? pattern2.source : pattern2}`, 'g');
 
       // Match strings between tags
-      const matches = str.match(regex);
+      const matches = str.match(regexStr);
 
       if (matches !== null) {
         // Extract extensions
-        const result: ExtensionsResult[] = matches.map((match) => {
-          const extension = match.substring(pattern1.length, match.length - pattern2.length);
+        const result: GetExtensionsData[] = matches.map((match) => {
+          const extension = match.substring((pattern1 instanceof RegExp) ? pattern1.source.length : pattern1.length, match.length - ((pattern2 instanceof RegExp) ? pattern2.source.length : pattern2.length));
           return { extension };
         });
 
@@ -360,7 +361,6 @@ const getExtensions = async (str: string, pattern1: string, pattern2: string): P
     }
   });
 };
-
 
 // Tracks
 const getTracks = async (readGpxFile: string): Promise<TrackData[]> => {

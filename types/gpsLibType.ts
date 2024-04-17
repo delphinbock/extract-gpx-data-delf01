@@ -36,7 +36,7 @@ interface StageData {
     };
 }
 
-interface MergeStagesTrackDataReturn {
+interface MergeStagesTrackData {
     namesArrObj: { id: string; name: string }[];
     typeArrObj: { id: string; type: string }[];
     cmtArrObj: { id: string; type: string }[];
@@ -71,7 +71,7 @@ interface MergeStagesTrackDataReturn {
     };
 }
 
-type MergeStagesTrackData = (stagesTrackArr: StageData[]) => Promise<MergeStagesTrackDataReturn>;
+type MergeStagesTrack = (stagesTrackArr: StageData[]) => Promise<MergeStagesTrackData>;
 
 // Get string between tags
 interface GetStringProps {
@@ -83,20 +83,29 @@ interface GetStringProps {
 type GetString = (props: GetStringProps) => Promise<string[]>;
 
 // Get link tag
-interface LinkTrkReturn {
+interface LinkTrkData {
     href: string | null;
     text: string | null;
     type: string | null;
 }
 
-type GetLinkTrk = (str: string) => Promise<LinkTrkReturn>;
+type GetLinkTrk = (str: string) => Promise<LinkTrkData>;
 
-// 
-interface ExtensionsResult {
+// Get extension tag
+interface GetExtensionsData {
     extension: string | null;
 }
 
-interface TrackData {
+interface GetStringProps {
+    str: string;
+    pattern1: string | RegExp;
+    pattern2: string | RegExp;
+}
+
+type GetExtensions = (props: GetStringProps) => Promise<GetExtensionsData[]>;
+
+//
+interface GetTrackData {
     id: number;
     name: string | null;
     type: string | null;
@@ -435,12 +444,13 @@ export {
     RootAppPath,
     ReadGpxFile,
     GetStringBetweenIncludedPatterns,
-    MergeStagesTrackDataReturn,
+    MergeStagesTrack,
     MergeStagesTrackData,
     GetString,
     GetLinkTrk,
-    LinkTrkReturn,
-    ExtensionsResult,
+    LinkTrkData,
+    GetExtensions,
+    GetExtensionsData,
     TrackData,
     LinkData,
     RouteData,
