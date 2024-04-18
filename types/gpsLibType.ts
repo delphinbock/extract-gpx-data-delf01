@@ -5,408 +5,472 @@ type RootAppPath = () => Promise<{ rootAppDirectory: string }>;
 type ReadGpxFile = (gpxFilePath: string) => Promise<string | false>;
 
 // Get string between two included string of characters
-type GetStringBetweenIncludedPatterns = (
-    str: string,
-    pattern1: string | RegExp,
-    pattern2: string | RegExp
-) => Promise<string[] | null>;
+interface GetStringBetweenIncludedPatternsProps {
+  str: string;
+  pattern1: string | RegExp;
+  pattern2: string | RegExp;
+}
+
+interface GetStringBetweenIncludedPatternsData {
+  result: string[] | null | [];
+}
+
+type GetStringBetweenIncludedPatterns = (props: GetStringBetweenIncludedPatternsProps) => Promise<GetStringBetweenIncludedPatternsData>;
 
 // Merge all stages track
 interface StageData {
-    id: string;
-    name: string;
-    type: string;
-    cmt: string;
-    desc: string;
-    src: string;
-    url: string;
-    urlname: string;
-    link: string;
-    number: string;
-    extensions: string;
-    positions: {
-        positionsArrObj: any[];
-    };
-    distance: {
-        meters: number;
-        yards: number;
-    };
-    elevations: {
-        full: number[];
-    };
+  id: string;
+  name: string;
+  type: string;
+  cmt: string;
+  desc: string;
+  src: string;
+  url: string;
+  urlname: string;
+  link: string;
+  number: string;
+  extensions: string;
+  positions: {
+    positionsArrObj: any[];
+  };
+  distance: {
+    meters: number;
+    yards: number;
+  };
+  elevations: {
+    full: number[];
+  };
 }
 
 interface MergeStagesTrackData {
-    namesArrObj: { id: string; name: string }[];
-    typeArrObj: { id: string; type: string }[];
-    cmtArrObj: { id: string; type: string }[];
-    descArrObj: { id: string; type: string }[];
-    srcArrObj: { id: string; type: string }[];
-    urlArrObj: { id: string; type: string }[];
-    urlnameArrObj: { id: string; type: string }[];
-    linkArrObj: { id: string; type: string }[];
-    numberArrObj: { id: string; type: string }[];
-    extensionsArrObj: { id: string; type: string }[];
-    distances: {
-        full: {
-            meters: number | null;
-            yards: number | null;
-        };
-        distancesArrObj: { id: string; distance: { meters: number; yards: number } }[];
+  namesArrObj: { id: string; name: string }[];
+  typeArrObj: { id: string; type: string }[];
+  cmtArrObj: { id: string; type: string }[];
+  descArrObj: { id: string; type: string }[];
+  srcArrObj: { id: string; type: string }[];
+  urlArrObj: { id: string; type: string }[];
+  urlnameArrObj: { id: string; type: string }[];
+  linkArrObj: { id: string; type: string }[];
+  numberArrObj: { id: string; type: string }[];
+  extensionsArrObj: { id: string; type: string }[];
+  distances: {
+    full: {
+      meters: number | null;
+      yards: number | null;
     };
-    positions: {
-        full: any[];
-        positionsArrObj: any[];
-    };
-    elevations: {
-        full: number[];
-        min: number | null;
-        max: number | null;
-        minMaxArrObj: { id: string; elevations: number[] }[];
-    };
-    cumulativeElevations: {
-        cumulativePositiveElevation: number | null;
-        cumulativeNegativeElevation: number | null;
-        cumulativeElevationArrObj: { id: string }[];
-    };
+    distancesArrObj: { id: string; distance: { meters: number; yards: number } }[];
+  };
+  positions: {
+    full: any[];
+    positionsArrObj: any[];
+  };
+  elevations: {
+    full: number[];
+    min: number | null;
+    max: number | null;
+    minMaxArrObj: { id: string; elevations: number[] }[];
+  };
+  cumulativeElevations: {
+    cumulativePositiveElevation: number | null;
+    cumulativeNegativeElevation: number | null;
+    cumulativeElevationArrObj: { id: string }[];
+  };
 }
 
 type MergeStagesTrack = (stagesTrackArr: StageData[]) => Promise<MergeStagesTrackData>;
 
 // Get string between tags
 interface GetStringProps {
-    str: string;
-    pattern1: string | RegExp;
-    pattern2: string | RegExp;
+  str: string;
+  pattern1: string | RegExp;
+  pattern2: string | RegExp;
 }
 
 type GetString = (props: GetStringProps) => Promise<string[]>;
 
 // Get link tag
-interface LinkTrkData {
-    href: string | null;
-    text: string | null;
-    type: string | null;
+interface GetLinkTrkData {
+  href: string | null;
+  text: string | null;
+  type: string | null;
 }
 
-type GetLinkTrk = (str: string) => Promise<LinkTrkData>;
+type GetLinkTrk = (str: string) => Promise<GetLinkTrkData>;
 
 // Get extension tag
 interface GetExtensionsData {
-    extension: string | null;
+  extension: string | null;
 }
 
 interface GetStringProps {
-    str: string;
-    pattern1: string | RegExp;
-    pattern2: string | RegExp;
+  str: string;
+  pattern1: string | RegExp;
+  pattern2: string | RegExp;
 }
 
 type GetExtensions = (props: GetStringProps) => Promise<GetExtensionsData[]>;
 
-//
-interface GetTrackData {
-    id: number;
-    name: string | null;
-    type: string | null;
-    cmt: string | null;
-    desc: string | null;
-    src: string | null;
-    url: string | null;
-    urlname: string | null;
-    number: string | null;
-    link: any;
-    extensions: string | null;
-    distance: {
-        meters: number | null;
-        yards: number | null;
-    };
-    elevations: {
-        full: number[];
-        min: number | null;
-        max: number | null;
-        cumulativePositiveElevation: number | null;
-        cumulativeNegativeElevation: number | null;
-    };
-    positions: {
-        positionsArrObj: any[];
-        positionsArrArr: any[];
-    };
-    times: {
-        full: any[];
-    };
-    magvars: {
-        full: any[];
-    };
-    geoidheights: {
-        full: any[];
-    };
-    names: {
-        full: any[];
-    };
-    cmts: {
-        full: any[];
-    };
-    descs: {
-        full: any[];
-    };
-    srcs: {
-        full: any[];
-    };
-    urls: {
-        full: any[];
-    };
-    urlnames: {
-        full: any[];
-    };
-    syms: {
-        full: any[];
-    };
-    types: {
-        full: any[];
-    };
-    fixs: {
-        full: any[];
-    };
-    sats: {
-        full: any[];
-    };
-    hdops: {
-        full: any[];
-    };
-    vdops: {
-        full: any[];
-    };
-    pdops: {
-        full: any[];
-    };
-    ageofdgpsdatas: {
-        full: any[];
-    };
-    dgpsids: {
-        full: any[];
-    };
-    extensionss: {
-        full: any[];
-    };
-    speeds: {
-        full: any[];
-    };
-    courses: {
-        full: any[];
-    };
+// Get tracks
+interface GetTracksProps {
+  readGpxFile: string;
 }
 
-interface LinkData {
-    href: string | null;
-    text: string | null;
-    type: string | null;
+interface GetTracksData {
+  id: number;
+  name: string | null;
+  type: string | null;
+  cmt: string | null;
+  desc: string | null;
+  src: string | null;
+  url: string | null;
+  urlname: string | null;
+  number: string | null;
+  link: any;
+  extensions: string | null;
+  distance: {
+    meters: number | null;
+    yards: number | null;
+  };
+  elevations: {
+    full: number[];
+    min: number | null;
+    max: number | null;
+    cumulativePositiveElevation: number | null;
+    cumulativeNegativeElevation: number | null;
+  };
+  positions: {
+    positionsArrObj: any[];
+    positionsArrArr: any[];
+  };
+  times: {
+    full: any[];
+  };
+  magvars: {
+    full: any[];
+  };
+  geoidheights: {
+    full: any[];
+  };
+  names: {
+    full: any[];
+  };
+  cmts: {
+    full: any[];
+  };
+  descs: {
+    full: any[];
+  };
+  srcs: {
+    full: any[];
+  };
+  urls: {
+    full: any[];
+  };
+  urlnames: {
+    full: any[];
+  };
+  syms: {
+    full: any[];
+  };
+  types: {
+    full: any[];
+  };
+  fixs: {
+    full: any[];
+  };
+  sats: {
+    full: any[];
+  };
+  hdops: {
+    full: any[];
+  };
+  vdops: {
+    full: any[];
+  };
+  pdops: {
+    full: any[];
+  };
+  ageofdgpsdatas: {
+    full: any[];
+  };
+  dgpsids: {
+    full: any[];
+  };
+  extensionss: {
+    full: any[];
+  };
+  speeds: {
+    full: any[];
+  };
+  courses: {
+    full: any[];
+  };
 }
 
+type GetTracks = (props: GetTracksProps) => Promise<GetTracksData[]>;
 
-interface RouteData {
-    id: number | null;
-    name: string | null;
-    type: string | null;
-    cmt: string | null;
-    desc: string | null;
-    src: string | null;
-    url: string | null;
-    urlname: string | null;
-    number: string | null;
-    link: LinkData | null;
-    extensions: string | null;
-    distance: {
-        meters: number | null;
-        yards: number | null;
-    };
-    elevations: {
-        full: number[];
-        min: number | null;
-        max: number | null;
-        cumulativePositiveElevation: number | null;
-        cumulativeNegativeElevation: number | null;
-    };
-    positions: {
-        positionsArrObj: any[];
-        positionsArrArr: any[];
-    };
-    times: {
-        full: any[];
-    };
-    magvars: {
-        full: any[];
-    };
-    geoidheights: {
-        full: any[];
-    };
-    names: {
-        full: any[];
-    };
-    cmts: {
-        full: any[];
-    };
-    descs: {
-        full: any[];
-    };
-    srcs: {
-        full: any[];
-    };
-    urls: {
-        full: any[];
-    };
-    urlnames: {
-        full: any[];
-    };
-    syms: {
-        full: any[];
-    };
-    types: {
-        full: any[];
-    };
-    fixs: {
-        full: any[];
-    };
-    sats: {
-        full: any[];
-    };
-    hdops: {
-        full: any[];
-    };
-    vdops: {
-        full: any[];
-    };
-    pdops: {
-        full: any[];
-    };
-    ageofdgpsdatas: {
-        full: any[];
-    };
-    dgpsids: {
-        full: any[];
-    };
-    extensionss: {
-        full: any[];
-    };
-    speeds: {
-        full: any[];
-    };
-    courses: {
-        full: any[];
-    };
+// Routes
+interface GetRoutesData {
+  id: number | null;
+  name: string | null;
+  type: string | null;
+  cmt: string | null;
+  desc: string | null;
+  src: string | null;
+  url: string | null;
+  urlname: string | null;
+  number: string | null;
+  link: GetLinkTrkData | null;
+  extensions: string | null;
+  distance: {
+    meters: number | null;
+    yards: number | null;
+  };
+  elevations: {
+    full: number[];
+    min: number | null;
+    max: number | null;
+    cumulativePositiveElevation: number | null;
+    cumulativeNegativeElevation: number | null;
+  };
+  positions: {
+    positionsArrObj: any[];
+    positionsArrArr: any[];
+  };
+  times: {
+    full: any[];
+  };
+  magvars: {
+    full: any[];
+  };
+  geoidheights: {
+    full: any[];
+  };
+  names: {
+    full: any[];
+  };
+  cmts: {
+    full: any[];
+  };
+  descs: {
+    full: any[];
+  };
+  srcs: {
+    full: any[];
+  };
+  urls: {
+    full: any[];
+  };
+  urlnames: {
+    full: any[];
+  };
+  syms: {
+    full: any[];
+  };
+  types: {
+    full: any[];
+  };
+  fixs: {
+    full: any[];
+  };
+  sats: {
+    full: any[];
+  };
+  hdops: {
+    full: any[];
+  };
+  vdops: {
+    full: any[];
+  };
+  pdops: {
+    full: any[];
+  };
+  ageofdgpsdatas: {
+    full: any[];
+  };
+  dgpsids: {
+    full: any[];
+  };
+  extensionss: {
+    full: any[];
+  };
+  speeds: {
+    full: any[];
+  };
+  courses: {
+    full: any[];
+  };
 }
 
-interface WayPointData {
-    id: number;
-    name: string | null;
-    position: string | null;
-    elevation: number | null;
-    time: string | null;
-    magvar: string | null;
-    geoidheight: string | null;
-    cmt: string | null;
-    desc: string | null;
-    src: string | null;
-    url: string | null;
-    urlname: string | null;
-    sym: string | null;
-    type: string | null;
-    fix: string | null;
-    sat: string | null;
-    hdop: string | null;
-    vdop: string | null;
-    pdop: string | null;
-    ageofdgpsdata: string | null;
-    dgpsid: string | null;
-    extensions: string | null;
-    speed: string | null;
-    course: string | null;
-    link: LinkData | null;
+interface GetRoutesProps {
+  readGpxFile: string;
 }
 
-interface DataExtractionResult {
-    gpxFileMetadata: any;
-    wayPoints: WayPointData[];
-    routes: RouteData[];
-    stagesTrackData: TrackData[];
-    MergeStagesTrackDataInterface: any;
+type GetRoutes = (props: GetRoutesProps) => Promise<GetRoutesData[]>;
+
+// Waypoints
+interface GetWayPointsProps {
+  readGpxFile: string;
 }
 
+interface GetWayPointsData {
+  id: number;
+  name: string | null;
+  position: string | null;
+  elevation: number | null;
+  time: string | null;
+  magvar: string | null;
+  geoidheight: string | null;
+  cmt: string | null;
+  desc: string | null;
+  src: string | null;
+  url: string | null;
+  urlname: string | null;
+  sym: string | null;
+  type: string | null;
+  fix: string | null;
+  sat: string | null;
+  hdop: string | null;
+  vdop: string | null;
+  pdop: string | null;
+  ageofdgpsdata: string | null;
+  dgpsid: string | null;
+  extensions: string | null;
+  speed: string | null;
+  course: string | null;
+  link: GetLinkTrkData | null;
+}
+
+type GetWayPoints = (props: GetWayPointsProps) => Promise<GetWayPointsData[]>;
+
+// Data extraction
+interface DataExtractionProps {
+  readGpxFile: string;
+}
+
+interface DataExtractionData {
+  gpxFileMetadata: any;
+  wayPoints: GetWayPointsData[];
+  routes: GetRoutesData[];
+  stagesTrackData: GetTracksData[];
+  mergeStagesTrackData: any;
+}
+
+type DataExtraction = (props: DataExtractionProps) => Promise<DataExtractionData>;
+
+// Split string
 interface SplitStringParams {
-    str: string;
-    pattern: string;
+  str: string;
+  pattern: string | RegExp;
 }
 
-interface SplitStringResult {
-    resArr: string[];
+interface SplitStringData {
+  resArr: string[];
 }
 
-interface ElevationsData {
-    cumulativeNegativeElevation: number;
-    cumulativePositiveElevation: number;
+type SplitString = (props: SplitStringParams) => Promise<SplitStringData>;
+
+// Get cumulative elevations
+interface GetCumulativeElevationsArray extends Array<number> { }
+
+interface GetCumulativeElevationsProps {
+  elevationsArr: GetCumulativeElevationsArray;
 }
 
-interface PositionObject {
-    lat: number;
-    lon: number;
+interface GetCumulativeElevationsData {
+  cumulativeNegativeElevation: number;
+  cumulativePositiveElevation: number;
 }
 
-interface PositionObject {
-    lat: number;
-    lon: number;
+type GetCumulativeElevations = (props: GetCumulativeElevationsProps) => Promise<GetCumulativeElevationsData>;
+
+// Convert array of positions object to an array of positions arrays
+interface ConvertPositionsToArrProps {
+  positionsArrObj: GetPositionsArrData[];
 }
 
-interface StringArrayElement {
-    [index: number]: string;
+interface ConvertPositionsToArrData {
+  id: string;
+  positions: number[][];
 }
 
-interface GetElevationData {
-    (strArr: string[], pattern1: string, pattern2: string): Promise<number[]>;
+type ConvertPositionsToArr = (props: ConvertPositionsToArrProps) => Promise<ConvertPositionsToArrData>;
+
+// Get selected string from string
+interface GetPositionsArrProps {
+  strArr: string[];
+  pattern: string;
 }
 
-interface StringArrayIndexSignature {
-    [index: number]: string;
+interface GetPositionsArrData {
+  lat: number;
+  lon: number;
 }
 
-interface GetTagsValueArr {
-    (strArr: string[], pattern1: string, pattern2: string): Promise<string[]>;
+type GetPositionsArr = (props: GetPositionsArrProps) => Promise<GetPositionsArrData[]>;
+
+// Get elevations
+interface GetElevationArrProps {
+  strArr: string[];
+  pattern1: string | RegExp;
+  pattern2: string | RegExp;
 }
 
-interface BoundsData {
-    minlat: number | null;
-    minlon: number | null;
-    maxlat: number | null;
-    maxlon: number | null;
+interface GetElevationArrData {
+  elevationArr: number[];
 }
 
-interface GetBounds {
-    (metaData: string[]): Promise<BoundsData>;
+type GetElevationArr = (props: GetElevationArrProps) => Promise<GetElevationArrData>;
+
+// Get tag's value
+interface GetTagsValueArrProps {
+  strArr: string[];
+  pattern1: string | RegExp;
+  pattern2: string | RegExp;
 }
 
-interface LinkData {
-    href: string | null;
-    text: string | null;
-    type: string | null;
+interface GetTagsValueArrData {
+  tagsValueArr: string[];
 }
 
-interface GetLink {
-    (str: string[]): Promise<LinkData>;
+type GetTagsValueArr = (props: GetTagsValueArrProps) => Promise<GetTagsValueArrData>;
+
+// Get bounds tag
+interface GetBoundsProps {
+  metaData: GetStringBetweenIncludedPatternsProps;
 }
 
-interface GpxFileBounds {
-    minlat: number | null;
-    minlon: number | null;
-    maxlat: number | null;
-    maxlon: number | null;
+interface GetBoundsData {
+  bounds: {
+    minLat: number | null;
+    maxLat: number | null;
+    minLon: number | null;
+    maxLon: number | null;
+  };
 }
 
-interface GpxFileLink {
-    href: string | null;
-    text: string | null;
-    type: string | null;
+type GetBounds = (props: GetBoundsProps) => Promise<GetBoundsData>;
+
+// Get metadata from a GPX file
+interface GetLinkProps {
+  str: string;
 }
 
-interface GpxFileMetadata {
+interface GetLinkData {
+  href: string | null;
+  text: string | null;
+  type: string | null;
+}
+
+type GetLink = (props: GetLinkProps) => Promise<GetLinkData>;
+
+// Get metadata from a GPX file
+interface GetMetaDataProps {
+  readGpxFile: string;
+}
+
+interface GetMetaDataData {
+  gpxFileMetadata: {
     gpxFileCreatorName: string | null;
     gpxFileName: string | null;
     gpxFileDescription: string | null;
@@ -415,63 +479,59 @@ interface GpxFileMetadata {
     gpxFileCreationDatetime: string | null;
     gpxFileKeywords: string | null;
     gpxFileExtensions: string | null;
-    gpxFileBounds: GpxFileBounds | null;
-    gpxFileLink: GpxFileLink | null;
+    gpxFileBounds: GetBoundsData | null;
+    gpxFileLink: GetLinkData | null;
+  };
 }
 
-interface MetadataObj {
-    gpxFileMetadata: GpxFileMetadata;
+type GetMetaData = (props: GetMetaDataProps) => Promise<GetMetaDataData>;
+
+// Calculate between positions - Return the distance between (lat1,lon1) and (lat2,lon2)
+type CalculateDistanceBetweenPositions = (props: GetPositionsArrData[]) => Promise<number>;
+
+// Track distance calculation
+interface TrackDistanceCalculationProps {
+  positionsArray: number[][];
 }
 
-interface Position {
-    lat: number;
-    lon: number;
-}
-
-
-
-interface CumulativeElevations {
-    cumulativePositiveElevation: number;
-    cumulativeNegativeElevation: number;
-}
-
-
-
-
+type TrackDistanceCalculation = (props: TrackDistanceCalculationProps) => Promise<number>;
 
 
 export {
-    RootAppPath,
-    ReadGpxFile,
-    GetStringBetweenIncludedPatterns,
-    MergeStagesTrack,
-    MergeStagesTrackData,
-    GetString,
-    GetLinkTrk,
-    LinkTrkData,
-    GetExtensions,
-    GetExtensionsData,
-    TrackData,
-    LinkData,
-    RouteData,
-    WayPointData,
-    DataExtractionResult,
-    SplitStringParams,
-    SplitStringResult,
-    ElevationsData,
-    PositionObject,
-    StringArrayElement,
-    GetElevationData,
-    StringArrayIndexSignature,
-    GetTagsValueArr,
-    BoundsData,
-    GetBounds,
-    GetLink,
-    GpxFileBounds,
-    GpxFileLink,
-    GpxFileMetadata,
-    MetadataObj,
-    Position,
-    StageData,
-    CumulativeElevations
+  RootAppPath,
+  ReadGpxFile,
+  GetStringBetweenIncludedPatterns,
+  MergeStagesTrack,
+  MergeStagesTrackData,
+  GetString,
+  GetLinkTrk,
+  GetLinkTrkData,
+  GetExtensions,
+  GetExtensionsData,
+  GetTracks,
+  GetTracksData,
+  GetRoutes,
+  GetRoutesData,
+  GetWayPoints,
+  GetWayPointsData,
+  DataExtraction,
+  DataExtractionData,
+  SplitString,
+  GetCumulativeElevations,
+  GetCumulativeElevationsData,
+  ConvertPositionsToArr,
+  ConvertPositionsToArrData,
+  GetPositionsArr,
+  GetPositionsArrData,
+  GetElevationArr,
+  GetTagsValueArr,
+  GetBounds,
+  GetBoundsData,
+  GetLink,
+  GetLinkData,
+  GetMetaData,
+  GetMetaDataData,
+  StageData,
+  CalculateDistanceBetweenPositions,
+  TrackDistanceCalculation,
 };

@@ -20,32 +20,34 @@ import {
   MergeStagesTrack,
   GetString,
   GetLinkTrk,
-  LinkTrkData,
+  GetLinkTrkData,
   GetExtensions,
   GetExtensionsData,
-  TrackData,
-  LinkData,
-  RouteData,
-  WayPointData,
-  DataExtractionResult,
-  SplitStringParams,
-  SplitStringResult,
-  ElevationsData,
-  PositionObject,
-  StringArrayElement,
-  GetElevationData,
-  StringArrayIndexSignature,
+  GetTracks,
+  GetTracksData,
+  GetRoutes,
+  GetRoutesData,
+  GetWayPoints,
+  GetWayPointsData,
+  DataExtraction,
+  DataExtractionData,
+  SplitString,
+  GetCumulativeElevations,
+  GetCumulativeElevationsData,
+  ConvertPositionsToArr,
+  ConvertPositionsToArrData,
+  GetPositionsArr,
+  GetPositionsArrData,
+  GetElevationArr,
   GetTagsValueArr,
-  BoundsData,
   GetBounds,
+  GetBoundsData,
   GetLink,
-  GpxFileBounds,
-  GpxFileLink,
-  GpxFileMetadata,
-  MetadataObj,
-  Position,
-  StageData,
-  CumulativeElevations,
+  GetLinkData,
+  GetMetaData,
+  GetMetaDataData,
+  CalculateDistanceBetweenPositions,
+  TrackDistanceCalculation,
 } from '../types/gpsLibType';
 
 // Root app directory
@@ -104,16 +106,11 @@ const readGpxFile: ReadGpxFile = async (gpxFilePath) => {
 }
 
 // Get string between two included string of characters
-const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async (
-  str,
-  pattern1,
-  pattern2
-) => {
-  return new Promise<string[] | null>((resolve, reject) => {
+const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async ({ str, pattern1, pattern2 }) => {
+  return new Promise((resolve, reject) => {
     try {
       if (!str) {
-        resolve(null);
-        return;
+        resolve({ result: null });
       }
 
       // Convert pattern1 and pattern2 to regular expressions if they are not already regular expressions
@@ -132,9 +129,9 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
         return patternStr.replace(/\s+/g, '').replace(/(\r\n|\n|\r)/gm, '');
       });
 
-      resolve(resultArray.filter(Boolean)); // Filter out empty strings
+      resolve({ result: resultArray.filter(Boolean) });
     } catch (error) {
-      console.error(":( getStringBetweenIncludedPatterns error".red);
+      console.error("getStringBetweenIncludedPatterns error", error);
       reject(error);
     }
   });
@@ -215,7 +212,7 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
         mergeStagesTrackData.extensionsArrObj.push({ id: id, type: extensions });
 
         // Merge positions
-        mergeStagesTrackData.positions.positionsArrObj.push({ id: id, positions: positions });
+        mergeStagesTrackData.positions.positionsArrObj.push({ positions: positions });
 
         // Merge distances
         mergeStagesTrackData.distances.distancesArrObj.push({ id: id, distance: distance });
@@ -310,7 +307,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
         const typeMatch = str.match(typeRegex);
         const type = typeMatch ? typeMatch[1] : null;
 
-        const linkTrk: LinkTrkReturn = {
+        const linkTrk: GetLinkTrkData = {
           href: href,
           text: text,
           type: type
@@ -318,7 +315,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
 
         resolve(linkTrk);
       } else {
-        const linkTrk: LinkTrkReturn = {
+        const linkTrk: GetLinkTrkData = {
           href: null,
           text: null,
           type: null
@@ -363,19 +360,19 @@ const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
 };
 
 // Tracks
-const getTracks = async (readGpxFile: string): Promise<TrackData[]> => {
-  return new Promise<TrackData[]>(async (resolve, reject) => {
+const getTracks: GetTracks = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Get track tag
       const stagesTrackArray = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<trk>", "</trk>");
 
       if (stagesTrackArray !== null) {
-        const resArr: TrackData[] = [];
+        const resArr: GetTracksData[] = [];
 
         // Listing stages track
         for (let k = 0; k < stagesTrackArray.length; k++) {
           const stage = stagesTrackArray[k];
-          const trackData: TrackData = {
+          const trackData: GetTracksData = {
             id: k,
             name: null,
             type: null,
@@ -566,19 +563,19 @@ const getTracks = async (readGpxFile: string): Promise<TrackData[]> => {
 };
 
 // Routes
-const getRoutes = async (readGpxFile: string): Promise<RouteData[]> => {
-  return new Promise<RouteData[]>(async (resolve, reject) => {
+const getRoutes: GetRoutes = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Get route tag
       const routesArr = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<rte>", "</rte>");
 
       if (routesArr !== null) {
-        const resArr: RouteData[] = [];
+        const resArr: GetRoutesData[] = [];
 
         // Listing routes
         for (let w = 0; w < routesArr.length; w++) {
           const route = routesArr[w];
-          const routeData: RouteData = {
+          const routeData: GetRoutesData = {
             id: w,
             name: null,
             type: null,
@@ -740,21 +737,20 @@ const getRoutes = async (readGpxFile: string): Promise<RouteData[]> => {
   });
 };
 
-
 // Waypoints
-const getWayPoints = async (readGpxFile: string): Promise<WayPointData[]> => {
-  return new Promise<WayPointData[]>(async (resolve, reject) => {
+const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // File creator
       const wayPointsArray = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<wpt", "</wpt>");
 
       if (wayPointsArray !== null) {
-        const resArr: WayPointData[] = [];
+        const resArr: GetWayPointsData[] = [];
 
         // Listing way points
         for (let m = 0; m < wayPointsArray.length; m++) {
           const point = wayPointsArray[m];
-          const wayPointsData: WayPointData = {
+          const wayPointsData: GetWayPointsData = {
             id: m,
             name: null,
             position: null,
@@ -829,8 +825,8 @@ const getWayPoints = async (readGpxFile: string): Promise<WayPointData[]> => {
 };
 
 // Extract gpx data
-const dataExtraction = async (readGpxFile: string): Promise<DataExtractionResult> => {
-  return new Promise<DataExtractionResult>(async (resolve, reject) => {
+const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Metadata extraction
       const gpxFileMetadata = await exports.getMetaData(readGpxFile);
@@ -848,7 +844,7 @@ const dataExtraction = async (readGpxFile: string): Promise<DataExtractionResult
       const mergeStagesTrackData = await exports.mergeStagesTrackData(stagesTrackData);
 
       // Result object
-      const obj: DataExtractionResult = {
+      const obj: DataExtractionData = {
         gpxFileMetadata,
         wayPoints,
         routes,
@@ -865,8 +861,8 @@ const dataExtraction = async (readGpxFile: string): Promise<DataExtractionResult
 };
 
 // Split string
-const splitString = async ({ str, pattern }: SplitStringParams): Promise<SplitStringResult> => {
-  return new Promise<SplitStringResult>((resolve, reject) => {
+const splitString: SplitString = async ({ str, pattern }) => {
+  return new Promise((resolve, reject) => {
     try {
       // Split
       const resArr: string[] = str.split(pattern);
@@ -879,12 +875,12 @@ const splitString = async ({ str, pattern }: SplitStringParams): Promise<SplitSt
 };
 
 // Get cumulative elevations
-const getCumulativeElevations = async (elevationsArr: number[]): Promise<ElevationsData> => {
-  return new Promise<ElevationsData>(async (resolve, reject) => {
+const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // If no elevation tags
       if (elevationsArr.length === 0) {
-        const obj1: ElevationsData = {
+        const obj1: GetCumulativeElevationsData = {
           cumulativeNegativeElevation: 0,
           cumulativePositiveElevation: 0
         };
@@ -936,7 +932,7 @@ const getCumulativeElevations = async (elevationsArr: number[]): Promise<Elevati
         }
 
         // Obj
-        const obj2: ElevationsData = {
+        const obj2: GetCumulativeElevationsData = {
           cumulativeNegativeElevation,
           cumulativePositiveElevation
         };
@@ -944,7 +940,7 @@ const getCumulativeElevations = async (elevationsArr: number[]): Promise<Elevati
         resolve(obj2);
       } else {
         // Obj
-        const obj3: ElevationsData = {
+        const obj3: GetCumulativeElevationsData = {
           cumulativeNegativeElevation: elevationsArr[0],
           cumulativePositiveElevation: elevationsArr[0]
         };
@@ -957,24 +953,19 @@ const getCumulativeElevations = async (elevationsArr: number[]): Promise<Elevati
   });
 };
 
-
 // Convert array of positions object to an array of positions arrays
-const convertPositionsToArr = async (positionsArrObj: PositionObject[]): Promise<number[][]> => {
-  return new Promise<number[][]>(async (resolve, reject) => {
+const convertPositionsToArr: ConvertPositionsToArr = async ({ positionsArrObj }) => {
+  return new Promise((resolve, reject) => {
     try {
       // Settings
-      const resArr: number[][] = [];
+      const resArr: ConvertPositionsToArrData = { id: '', positions: [] };
 
-      positionsArrObj.forEach((positionsObj, i) => {
-        // Array
-        const arr = [positionsObj.lat, positionsObj.lon];
-        resArr.push(arr);
+      for (const positionsObj of positionsArrObj) {
+        const arr: [number, number] = [positionsObj.lat, positionsObj.lon];
+        resArr.positions.push(arr);
+      }
 
-        // End loop
-        if (positionsArrObj.length === i + 1) {
-          resolve(resArr);
-        }
-      });
+      resolve(resArr);
     } catch (error) {
       console.error(':( convertPositionsToArr error', error);
       reject(error);
@@ -983,33 +974,19 @@ const convertPositionsToArr = async (positionsArrObj: PositionObject[]): Promise
 };
 
 // Get selected string from string
-const getPositionsArr = async (strArr: string[], pattern: string): Promise<PositionObject[]> => {
-  return new Promise<PositionObject[]>(async (resolve, reject) => {
+const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Result array
-      const resArr: PositionObject[] = [];
+      const resArr: GetPositionsArrData[] = strArr
+        .map(str => str.split(pattern))
+        .filter(splitStr => !isNaN(parseFloat(splitStr[1])) && !isNaN(parseFloat(splitStr[3])))
+        .map(splitStr => ({
+          lat: parseFloat(splitStr[1]),
+          lon: parseFloat(splitStr[3])
+        }));
 
-      // Listing selected string
-      strArr.forEach((str, i) => {
-        // Split
-        const splitStr = str.split(pattern);
-
-        // Record
-        if (!isNaN(parseFloat(splitStr[1])) || !isNaN(parseFloat(splitStr[3]))) {
-          // Result object
-          const obj: PositionObject = {
-            lat: parseFloat(splitStr[1]),
-            lon: parseFloat(splitStr[3])
-          };
-
-          resArr.push(obj);
-        }
-
-        // End loop
-        if (strArr.length === i + 1) {
-          resolve(resArr);
-        }
-      });
+      resolve(resArr);
     } catch (error) {
       console.error(':( getPositionsArr error', error);
       reject(error);
@@ -1018,68 +995,59 @@ const getPositionsArr = async (strArr: string[], pattern: string): Promise<Posit
 };
 
 // Get elevations
-const getElevationsArr: GetElevationData = async (strArr, pattern1, pattern2) => {
-  return new Promise<number[]>(async (resolve, reject) => {
+const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // If no elevations
       if (strArr.length > 0) {
-        // Result array
-        const resArr: number[] = [];
+        // Promise array to store results of each getString call
+        const promises = strArr.map(str => exports.getString(str, pattern1, pattern2));
 
-        // Listing selected string
-        for (let i = 0; i < strArr.length; i++) {
-          // Get each elevation
-          const eleStr: StringArrayElement = await exports.getString(strArr[i], pattern1, pattern2);
+        // Wait for all promises to resolve
+        const results = await Promise.all(promises);
 
-          // Record
-          if (!isNaN(parseFloat(eleStr[0]))) {
-            // Elevation
-            const ele = parseFloat(eleStr[1]);
-            // Record elevation
-            resArr.push(ele);
-          }
+        // Extract elevations from results
+        const resArr = results
+          .map(eleStr => parseFloat(eleStr[1])) // Parse elevation strings to numbers
+          .filter(ele => !isNaN(ele)); // Filter out non-numeric elevations
 
-          // End loop
-          if (strArr.length === i + 1) {
-            resolve(resArr);
-          }
-        }
+        // Resolve with elevation array wrapped in an object
+        resolve({ elevationArr: resArr });
       } else {
-        resolve([0]);
+        // Resolve with an empty elevation array wrapped in an object
+        resolve({ elevationArr: [] });
       }
     } catch (error) {
-      console.log(':( getElevationsArr error'.red);
-      reject(console.log);
+      console.error(':( getElevationsArr error', error);
+      reject(error);
     }
   });
 };
 
 // Get tag's value
-const getTagsValueArr: GetTagsValueArr = async (strArr, pattern1, pattern2) => {
-  return new Promise<string[]>(async (resolve, reject) => {
+const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      // Result array
-      const resArr: string[] = [];
+      // Mapping selected string array to promises
+      const promises = strArr.map(async (str) => {
+        // Get each tag value
+        const tagValue = await exports.getString(str, pattern1, pattern2);
+        return tagValue[0];
+      });
 
-      // Listing selected string
-      for (let i = 0; i < strArr.length; i++) {
-        // Get each elevation
-        const eleStr: StringArrayIndexSignature = await exports.getString(strArr[i], pattern1, pattern2);
-        resArr.push(eleStr[0]);
-      }
-
-      resolve(resArr);
+      // Resolve all promises and return the resulting array
+      const tagsValueArr = await Promise.all(promises);
+      resolve({ tagsValueArr });
     } catch (error) {
-      console.log(':( getTagsValueArr error'.red);
-      reject(console.log);
+      console.error(':( getTagsValueArr error', error);
+      reject(error);
     }
   });
 };
 
-
 // Get bounds tag
 const getBounds: GetBounds = async (metaData) => {
-  return new Promise<BoundsData>(async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Split string
       let a = metaData[0].split(`<bounds`);
@@ -1090,21 +1058,25 @@ const getBounds: GetBounds = async (metaData) => {
         let b = a[1].split("\"");
 
         // Obj
-        let obj: BoundsData = {
-          minlat: parseFloat(b[1]),
-          minlon: parseFloat(b[3]),
-          maxlat: parseFloat(b[5]),
-          maxlon: parseFloat(b[7])
+        let obj: GetBoundsData = {
+          bounds: {
+            minLat: parseFloat(b[1]),
+            minLon: parseFloat(b[3]),
+            maxLat: parseFloat(b[5]),
+            maxLon: parseFloat(b[7])
+          }
         };
 
         resolve(obj);
       } else {
         // Obj2
-        let obj2: BoundsData = {
-          minlat: null,
-          minlon: null,
-          maxlat: null,
-          maxlon: null
+        let obj2: GetBoundsData = {
+          bounds: {
+            minLat: null,
+            minLon: null,
+            maxLat: null,
+            maxLon: null
+          }
         };
 
         resolve(obj2);
@@ -1118,7 +1090,7 @@ const getBounds: GetBounds = async (metaData) => {
 
 // Get link tag
 const getLink: GetLink = async (str) => {
-  return new Promise<LinkData>(async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Check if link tag exists
       let check = str[0].includes(`<link`);
@@ -1142,7 +1114,7 @@ const getLink: GetLink = async (str) => {
           type = type[0];
 
           // Obj
-          let obj: LinkData = {
+          let obj: GetLinkData = {
             href: href,
             text: text,
             type: type
@@ -1151,7 +1123,7 @@ const getLink: GetLink = async (str) => {
           resolve(obj);
         } else {
           // Obj2
-          let obj2: LinkData = {
+          let obj2: GetLinkData = {
             href: null,
             text: null,
             type: null
@@ -1161,7 +1133,7 @@ const getLink: GetLink = async (str) => {
         }
       } else {
         // Retourne un objet avec des valeurs null
-        let objEmpty: LinkData = {
+        let objEmpty: GetLinkData = {
           href: null,
           text: null,
           type: null
@@ -1177,10 +1149,10 @@ const getLink: GetLink = async (str) => {
 };
 
 // Get metadata from a GPX file
-const getMetaData = async (readGpxFile: string): Promise<MetadataObj> => {
-  return new Promise<MetadataObj>(async (resolve, reject) => {
+const getMetaData: GetMetaData = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      let metadataObj: MetadataObj = {
+      let metadataObj: GetMetaDataData = {
         gpxFileMetadata: {
           gpxFileCreatorName: null,
           gpxFileName: null,
@@ -1212,8 +1184,8 @@ const getMetaData = async (readGpxFile: string): Promise<MetadataObj> => {
 
       if (metaData !== null) {
         // Extract bounds and link from the metadata
-        let boundsObj: GpxFileBounds | null = await exports.getBounds(metaData);
-        let linkObj: GpxFileLink | null = await exports.getLink(metaData[0]);
+        let boundsObj: GetBoundsData | null = await exports.getBounds(metaData);
+        let linkObj: GetLinkData | null = await exports.getLink(metaData[0]);
 
         let arr = [`name`, `desc`, `author`, `copyright`, `time`, `keywords`, `extensions`];
         let resArr: string[] = [];
@@ -1232,9 +1204,10 @@ const getMetaData = async (readGpxFile: string): Promise<MetadataObj> => {
               metadataObj.gpxFileMetadata[property] = resArr[f - 1];
 
               if (Object.keys(metadataObj.gpxFileMetadata).length === f + 1) {
-                metadataObj.gpxFileMetadata["gpxFileCreatorName"] = gpxFileCreatorName;
-                metadataObj.gpxFileMetadata["gpxFileBounds"] = boundsObj;
-                metadataObj.gpxFileMetadata["gpxFileLink"] = linkObj;
+                metadataObj.gpxFileMetadata.gpxFileCreatorName = gpxFileCreatorName;
+                metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
+                metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
+
                 resolve(metadataObj);
               }
             });
@@ -1245,14 +1218,14 @@ const getMetaData = async (readGpxFile: string): Promise<MetadataObj> => {
       }
     } catch (error) {
       console.log(':( getMetaData error'.red);
-      reject(console.log);
+      reject(error);
     }
   });
 };
 
 // Calculate between positions - Return the distance between (lat1,lon1) and (lat2,lon2)
-const calculateDistanceBetweenPositions = async (positionsArrayObj: Position[]): Promise<number> => {
-  return new Promise<number>(async (resolve, reject) => {
+const calculateDistanceBetweenPositions: CalculateDistanceBetweenPositions = async (positionsArrayObj) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Earth radius in meters
       let radius = 6378137.0;
@@ -1290,8 +1263,8 @@ const calculateDistanceBetweenPositions = async (positionsArrayObj: Position[]):
 };
 
 // Track distance calculation
-const trackDistanceCalculation = async (positionsArray: number[][]): Promise<number> => {
-  return new Promise<number>(async (resolve, reject) => {
+const trackDistanceCalculation: TrackDistanceCalculation = async ({ positionsArray }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Check if track tag exists
       if (positionsArray.length > 1) {
@@ -1300,17 +1273,17 @@ const trackDistanceCalculation = async (positionsArray: number[][]): Promise<num
           // Stop at last object
           if (typeof positionsArray[q + 1] === "object" && typeof positionsArray[q][1] === "number") {
             // Extract positions
-            let position1: Position = {
+            let position1: GetPositionsArrData = {
               lat: positionsArray[q][0],
               lon: positionsArray[q][1]
             };
 
-            let position2: Position = {
+            let position2: GetPositionsArrData = {
               lat: positionsArray[q + 1][0],
               lon: positionsArray[q + 1][1]
             };
 
-            let arrObj: Position[] = [position1, position2];
+            let arrObj: GetPositionsArrData[] = [position1, position2];
 
             // Calculate distance
             let distance = await calculateDistanceBetweenPositions(arrObj);
