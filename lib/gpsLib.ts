@@ -1327,7 +1327,7 @@ const trackDistanceCalculation: TrackDistanceCalculation = async ({ positionsArr
   });
 };
 
-export default {
+export {
   rootAppPath,
   readGpxFile,
   getStringBetweenIncludedPatterns,

@@ -515,6 +515,7 @@ export {
   GetWayPoints,
   GetWayPointsData,
   DataExtraction,
+  DataExtractionProps,
   DataExtractionData,
   SplitString,
   GetCumulativeElevations,
