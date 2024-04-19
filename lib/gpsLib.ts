@@ -226,9 +226,15 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
         mergeStagesTrackData.distances.full.meters += distance.meters;
 
         // Cumulative elevations
-        const cumulativeElevations = await exports.getCumulativeElevations(elevations.full);
-        mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation += cumulativeElevations.cumulativePositiveElevation;
-        mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation += cumulativeElevations.cumulativeNegativeElevation;
+        const cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevations.full });
+        if (mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation !== null) {
+          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation ??= 0;
+          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation += cumulativeElevations.cumulativePositiveElevation;
+        }
+        if (mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation !== null) {
+          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation ??= 0;
+          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation += cumulativeElevations.cumulativeNegativeElevation;
+        }
       }
 
       // Calculate additional data
@@ -254,7 +260,7 @@ const getString: GetString = async ({ str, pattern1, pattern2 }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Regex to get string between tags
-      const regex1 = new RegExp(`\(${pattern1}.*?${pattern2}\)`, 'g');
+      const regex1 = new RegExp(`(${pattern1}.*?${pattern2})`, 'g');
 
       // Regex to remove tags
       const regex2 = /(<([^>]+)>)/gi;
@@ -364,13 +370,18 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Get track tag
-      const stagesTrackArray = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<trk>", "</trk>");
+      const stagesTrackArray = await getStringBetweenIncludedPatterns({
+        str: readGpxFile,
+        pattern1: "<trk>",
+        pattern2: "</trk>"
+      });
 
-      if (stagesTrackArray !== null) {
+
+      if (stagesTrackArray.result !== null) {
         const resArr: GetTracksData[] = [];
 
         // Listing stages track
-        for (let k = 0; k < stagesTrackArray.length; k++) {
+        for (let k = 0; k < stagesTrackArray.result.length; k++) {
           const stage = stagesTrackArray[k];
           const trackData: GetTracksData = {
             id: k,
@@ -465,25 +476,25 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
           };
 
           // Tags tracks
-          let trkptStr = await exports.splitString(stage, "<trkpt");
+          let trkptStr = await splitString(stage, "<trkpt");
 
           // Segments tracks
-          let trksegStr = await exports.splitString(stage, "<trkseg>");
+          let trksegStr = await splitString(stage, "<trkseg>");
 
           // Check if data exists
           if (trkptStr.length > 0) {
 
             // Positions array of objects
-            let positionsArrObj = await exports.getPositionsArr(trkptStr, "\"");
+            let positionsArrObj = await getPositionsArr(trkptStr, "\"");
             trackData.positions["positionsArrObj"] = positionsArrObj;
 
             // Positions array of arrays
-            let positionsArrArr = await exports.convertPositionsToArr(positionsArrObj);
+            let positionsArrArr = await convertPositionsToArr(positionsArrObj);
             trackData.positions["positionsArrArr"] = positionsArrArr;
 
             // Distance calculation
             // Calculate distance
-            const distance = await exports.trackDistanceCalculation(positionsArrArr);
+            const distance = await trackDistanceCalculation(positionsArrArr);
 
             // Assign distance in meters
             trackData.distance["meters"] = distance;
@@ -497,7 +508,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             }
 
             // Elevations
-            let elevationsArr = await exports.getElevationsArr(trkptStr, "<ele>", "</ele>");
+            let elevationsArr = await getElevationsArr(trkptStr, "<ele>", "</ele>");
             trackData.elevations["full"] = elevationsArr;
 
             // Min elevation
@@ -509,7 +520,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             trackData.elevations["max"] = maxEle;
 
             // Cumulative elevations
-            let cumulativeElevations = await exports.getCumulativeElevations(elevationsArr);
+            let cumulativeElevations = await getCumulativeElevations(elevationsArr);
             trackData.elevations["cumulativeNegativeElevation"] = cumulativeElevations.cumulativeNegativeElevation;
             trackData.elevations["cumulativePositiveElevation"] = cumulativeElevations.cumulativePositiveElevation;
 
@@ -518,7 +529,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
 
             recordsTrkptArr.map(async (element) => {
               let arr = [trksegStr[1]];
-              let elementArr = await exports.getTagsValueArr(arr, `<${element}>`, `</${element}>`);
+              let elementArr = await getTagsValueArr(arr, `<${element}>`, `</${element}>`);
               let propertyName = `${element}s`;
               trackData[propertyName] = { full: elementArr };
             });
@@ -532,24 +543,25 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             recordsTrkArr.map(async (element) => {
 
               // Record trk elements
-              let elementArr = await exports.getString(stage, `<${element}>`, `</${element}>`);
+              let elementArr = await getString(stage, `<${element}>`, `</${element}>`);
               trackData[element] = elementArr[0];
             });
 
             // Link
             // <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link>
-            let linkObj = await exports.getLinkTrk(stage);
+            let linkObj = await getLinkTrk(stage);
             trackData.link = linkObj;
 
             // Route extensions
             // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
-            let extensions = await exports.getExtensions(stage, `<extensions>`, `</extensions>`);
+            let extensions = await getExtensions(stage, `<extensions>`, `</extensions>`);
             trackData.extensions = extensions[0];
 
             // Add the processed track data to the result array
             resArr.push(trackData);
           }
         }
+
         resolve(resArr);
       } else {
         console.log(":| No tracks in the gpx file.");
@@ -567,16 +579,20 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Get route tag
-      const routesArr = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<rte>", "</rte>");
+      const routesArr = await getStringBetweenIncludedPatterns({
+        str: readGpxFile,
+        pattern1: "<rte>",
+        pattern2: "</rte>"
+      });
 
-      if (routesArr !== null) {
+      if (routesArr.result !== null) {
         const resArr: GetRoutesData[] = [];
 
         // Listing routes
-        for (let w = 0; w < routesArr.length; w++) {
-          const route = routesArr[w];
+        for (const route of routesArr.result) {
           const routeData: GetRoutesData = {
-            id: w,
+            routeData: null,
+            id: null,
             name: null,
             type: null,
             cmt: null,
@@ -668,24 +684,30 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
           };
 
           // Route points tags
-          const rteptStrArr = await exports.splitString(route, "<rtept");
+          const rteptStrArr = await splitString({ str: route, pattern: "<rtept" });
 
-          if (rteptStrArr.length > 0) {
+          if (rteptStrArr.resArr.length > 0) {
             // Positions array of objects
-            const positionsArrObj = await exports.getPositionsArr(rteptStrArr, "\"");
+            const positionsArrObj = await getPositionsArr({ strArr: rteptStrArr.resArr, pattern: "\"" });
             routeData.positions["positionsArrObj"] = positionsArrObj;
 
             // Positions array of arrays
-            const positionsArrArr = await exports.convertPositionsToArr(positionsArrObj);
-            routeData.positions["positionsArrArr"] = positionsArrArr;
+            const positionsArrArr = (await convertPositionsToArr({ positionsArrObj })).positions;
+            routeData.positions.positionsArrArr = positionsArrArr;
 
             // Distance calculation
-            const distance = await exports.trackDistanceCalculation(positionsArrArr);
+            const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr });
             routeData.distance["meters"] = distance;
             routeData.distance["yards"] = typeof distance === 'number' ? distance * 1.093613 : null;
 
             // Elevations
-            const elevationsArr = await exports.getElevationsArr(rteptStrArr, "<ele>", "</ele>");
+            const elevationsArrData = await getElevationsArr({
+              strArr: rteptStrArr.resArr,
+              pattern1: "<ele>",
+              pattern2: "</ele>"
+            });
+
+            const elevationsArr = elevationsArrData.elevationArr;
             routeData.elevations["full"] = elevationsArr;
 
             // Min and max elevation
@@ -693,33 +715,50 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             routeData.elevations["max"] = Math.max(...elevationsArr);
 
             // Cumulative elevations
-            const cumulativeElevations = await exports.getCumulativeElevations(elevationsArr);
+            const cumulativeElevations = await getCumulativeElevations({ elevationsArr });
             routeData.elevations["cumulativeNegativeElevation"] = cumulativeElevations.cumulativeNegativeElevation;
             routeData.elevations["cumulativePositiveElevation"] = cumulativeElevations.cumulativePositiveElevation;
 
             // Record route points tags
             const recordsRteptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "extensions", "speed", "course"];
 
-            recordsRteptArr.map(async (element) => {
-              const elementArr = await exports.getTagsValueArr([rteptStrArr[1]], `<${element}>`, `</${element}>`);
-              routeData[`${element}s`] = { full: elementArr };
-            });
+            await Promise.all(recordsRteptArr.map(async (element) => {
+              if (rteptStrArr.resArr.length > 1) {
+                const elementArr = await getTagsValueArr({ strArr: [rteptStrArr.resArr[0]], pattern1: `<${element}>`, pattern2: `</${element}>` });
+                routeData[`${element}s`] = { full: elementArr.tagsValueArr };
+              } else {
+                throw new Error(`rteptStrArr.resArr does not contain enough elements for ${element}`);
+              }
+            }));
 
             // Records route "name", "type", "cmt", "desc", "src", "url", "urlname", "number" tags
             const recordsRteArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
 
-            recordsRteArr.map(async (element) => {
-              const elementArr = await exports.getString(route, `<${element}>`, `</${element}>`);
+            await Promise.all(recordsRteArr.map(async (element) => {
+              const elementArr = await getString({
+                str: route,
+                pattern1: `<${element}>`,
+                pattern2: `</${element}>`
+              });
               routeData[element] = elementArr[0];
-            });
+            }));
 
             // Route link
-            const linkObj = await exports.getLinkTrk(route);
+            const linkObj = await getLinkTrk(route);
             routeData.link = linkObj;
 
             // Route extensions
-            const extensions = await exports.getExtensions(route, `<extensions>`, `</extensions>`);
-            routeData.extensions = extensions[0];
+            const extensions = await getExtensions({
+              str: route,
+              pattern1: `<extensions>`,
+              pattern2: `</extensions>`
+            });
+
+            if (extensions.length > 0 && extensions[0].extension) {
+              routeData.extensions = extensions[0].extension;
+            } else {
+              routeData.extensions = null;
+            }
 
             // Record route
             resArr.push(routeData);
@@ -742,14 +781,18 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // File creator
-      const wayPointsArray = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<wpt", "</wpt>");
+      const wayPointsArray = await getStringBetweenIncludedPatterns({
+        str: readGpxFile,
+        pattern1: "<wpt",
+        pattern2: "</wpt>"
+      });
 
-      if (wayPointsArray !== null) {
+      if (wayPointsArray.result !== null) {
         const resArr: GetWayPointsData[] = [];
 
         // Listing way points
         for (let m = 0; m < wayPointsArray.length; m++) {
-          const point = wayPointsArray[m];
+          const point = wayPointsArray.result[m];
           const wayPointsData: GetWayPointsData = {
             id: m,
             name: null,
@@ -779,32 +822,37 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
           };
 
           // Tags tracks
-          const wptStr = await exports.splitString(point, "<wpt");
+          const wptStr = await splitString({ str: point, pattern: "<wpt" });
 
           // Check if data exists
           if (wptStr.length > 0) {
             // Position
-            const positionsArrObj = await exports.getPositionsArr(wptStr, "\"");
-            wayPointsData.position = positionsArrObj[0];
+            const positionsArrObj = await getPositionsArr({ strArr: wptStr.resArr, pattern: "\"" });
+            wayPointsData.position = `${positionsArrObj[0].lat},${positionsArrObj[0].lon}`;
 
             // Elevation
-            const elevationsArr = await exports.getElevationsArr(wptStr, "<ele>", "</ele>");
-            wayPointsData.elevation = parseFloat(elevationsArr[0]);
+            const elevationsArr = await getElevationsArr({
+              strArr: wptStr.resArr,
+              pattern1: "<ele>",
+              pattern2: "</ele>"
+            });
+            wayPointsData.elevation = parseFloat(elevationsArr.elevationArr[0].toString());
 
             // Link
-            const linkObj = await exports.getLinkTrk(wptStr[1]);
+            const linkObj = await getLinkTrk(wptStr.resArr[1]);
             wayPointsData.link = linkObj;
 
             // Route extensions
-            const extensions = await exports.getExtensions(wptStr[1], `<extensions>`, `</extensions>`);
-            wayPointsData.extensions = extensions[0];
+            const extensions = await getExtensions({ str: wptStr.resArr[1], pattern1: `<extensions>`, pattern2: `</extensions>` });
+            wayPointsData.extensions = extensions.length > 0 ? extensions[0].extension : null;
 
             // Record wpt elements
             const recordsWptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "speed", "course"];
 
             for (const element of recordsWptArr) {
-              const elementArr = await exports.getTagsValueArr(wptStr, `<${element}>`, `</${element}>`);
-              wayPointsData[element] = elementArr[1];
+              const elementArr = await getTagsValueArr({ strArr: wptStr.resArr, pattern1: `<${element}>`, pattern2: `</${element}>` });
+
+              wayPointsData[element] = elementArr.tagsValueArr[0];
             }
 
             // Record
@@ -829,19 +877,19 @@ const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Metadata extraction
-      const gpxFileMetadata = await exports.getMetaData(readGpxFile);
+      const gpxFileMetadata = await getMetaData(readGpxFile);
 
       // Routes
-      const routes = await exports.getRoutes(readGpxFile);
+      const routes = await getRoutes(readGpxFile);
 
       // Tracks
-      const stagesTrackData = await exports.getTracks(readGpxFile);
+      const stagesTrackData = await getTracks(readGpxFile);
 
       // Way points
-      const wayPoints = await exports.getWayPoints(readGpxFile);
+      const wayPoints = await getWayPoints(readGpxFile);
 
       // Merge tracks
-      const mergeStagesTrackData = await exports.mergeStagesTrackData(stagesTrackData);
+      const mergeStagesTrackData = await mergeStagesTrackData(stagesTrackData);
 
       // Result object
       const obj: DataExtractionData = {
@@ -1001,7 +1049,7 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
       // If no elevations
       if (strArr.length > 0) {
         // Promise array to store results of each getString call
-        const promises = strArr.map(str => exports.getString(str, pattern1, pattern2));
+        const promises = strArr.map(str => getString({ str, pattern1, pattern2 })); // Corrected call
 
         // Wait for all promises to resolve
         const results = await Promise.all(promises);
@@ -1031,7 +1079,7 @@ const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) 
       // Mapping selected string array to promises
       const promises = strArr.map(async (str) => {
         // Get each tag value
-        const tagValue = await exports.getString(str, pattern1, pattern2);
+        const tagValue = await getString({ str, pattern1, pattern2 });
         return tagValue[0];
       });
 
@@ -1106,11 +1154,11 @@ const getLink: GetLink = async (str) => {
           let href = b[1];
 
           // Get text
-          let text = await exports.getString(a[1], `<text>`, `</text>`);
+          let text = await getString(a[1], `<text>`, `</text>`);
           text = text[0];
 
           // Get type
-          let type = await exports.getString(a[1], `<type>`, `</type>`);
+          let type = await getString(a[1], `<type>`, `</type>`);
           type = type[0];
 
           // Obj
@@ -1150,6 +1198,7 @@ const getLink: GetLink = async (str) => {
 
 // Get metadata from a GPX file
 const getMetaData: GetMetaData = async ({ readGpxFile }) => {
+  console.log("readGpxFile")
   return new Promise(async (resolve, reject) => {
     try {
       let metadataObj: GetMetaDataData = {
@@ -1170,7 +1219,7 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
       let gpxFileCreatorName: string | null = null;
 
       // Extract creator name from the GPX file
-      let metaDataFileCreatorName = await exports.getStringBetweenIncludedPatterns(readGpxFile, "creator=", "<metadata>");
+      let metaDataFileCreatorName = await getStringBetweenIncludedPatterns(readGpxFile, "creator=", "<metadata>");
 
       if (metaDataFileCreatorName !== null) {
         gpxFileCreatorName = metaDataFileCreatorName[0].split("\"")[1];
@@ -1180,12 +1229,12 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
       }
 
       // Extract metadata from the GPX file
-      let metaData = await exports.getStringBetweenIncludedPatterns(readGpxFile, "<metadata>", "</metadata>");
+      let metaData = await getStringBetweenIncludedPatterns(readGpxFile, "<metadata>", "</metadata>");
 
       if (metaData !== null) {
         // Extract bounds and link from the metadata
-        let boundsObj: GetBoundsData | null = await exports.getBounds(metaData);
-        let linkObj: GetLinkData | null = await exports.getLink(metaData[0]);
+        let boundsObj: GetBoundsData | null = await getBounds(metaData);
+        let linkObj: GetLinkData | null = await getLink(metaData[0]);
 
         let arr = [`name`, `desc`, `author`, `copyright`, `time`, `keywords`, `extensions`];
         let resArr: string[] = [];

@@ -12,7 +12,8 @@ interface GetStringBetweenIncludedPatternsProps {
 }
 
 interface GetStringBetweenIncludedPatternsData {
-  result: string[] | null | [];
+  length: number;
+  result: string[] | null;
 }
 
 type GetStringBetweenIncludedPatterns = (props: GetStringBetweenIncludedPatternsProps) => Promise<GetStringBetweenIncludedPatternsData>;
@@ -116,6 +117,7 @@ interface GetTracksProps {
 }
 
 interface GetTracksData {
+  [key: string]: any;
   id: number;
   name: string | null;
   type: string | null;
@@ -211,6 +213,8 @@ type GetTracks = (props: GetTracksProps) => Promise<GetTracksData[]>;
 
 // Routes
 interface GetRoutesData {
+  routeData: any;
+  [key: string]: any;
   id: number | null;
   name: string | null;
   type: string | null;
@@ -314,6 +318,7 @@ interface GetWayPointsProps {
 }
 
 interface GetWayPointsData {
+  [key: string]: any;
   id: number;
   name: string | null;
   position: string | null;
@@ -365,6 +370,7 @@ interface SplitStringParams {
 }
 
 interface SplitStringData {
+  length: number;
   resArr: string[];
 }
 
@@ -437,6 +443,7 @@ type GetTagsValueArr = (props: GetTagsValueArrProps) => Promise<GetTagsValueArrD
 
 // Get bounds tag
 interface GetBoundsProps {
+  [key: string]: any;
   metaData: GetStringBetweenIncludedPatternsProps;
 }
 
@@ -453,6 +460,7 @@ type GetBounds = (props: GetBoundsProps) => Promise<GetBoundsData>;
 
 // Get metadata from a GPX file
 interface GetLinkProps {
+  [key: string]: any;
   str: string;
 }
 
@@ -471,6 +479,7 @@ interface GetMetaDataProps {
 
 interface GetMetaDataData {
   gpxFileMetadata: {
+    [key: string]: any;
     gpxFileCreatorName: string | null;
     gpxFileName: string | null;
     gpxFileDescription: string | null;
@@ -518,6 +527,7 @@ export {
   DataExtractionProps,
   DataExtractionData,
   SplitString,
+  SplitStringData,
   GetCumulativeElevations,
   GetCumulativeElevationsData,
   ConvertPositionsToArr,

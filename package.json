@@ -48,14 +48,13 @@
   "main": "./extract-gpx-data-delf01.ts",
   "name": "extract-gpx-data-delf01",
   "types": "./extract-gpx-data-delf01.d.ts",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/delphinbock/extract-gpx-data-delf01/tree/main"
   },
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "npx tsc"
   },
   "version": "1.1.8",
   "devDependencies": {
