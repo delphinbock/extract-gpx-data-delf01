@@ -11,8 +11,12 @@ const extractGpxData = async (gpxFilePath: string): Promise<any> => {
             return false;
         }
 
+       //  console.log('gpxFilePath', gpxFilePath);
+
         // Read the Gpx file
         const gpxContent: string | false = await readGpxFile(gpxFilePath);
+
+  
 
         // Check existing file
         if (typeof gpxContent === "boolean" && gpxContent === false) {
@@ -20,19 +24,27 @@ const extractGpxData = async (gpxFilePath: string): Promise<any> => {
             return false;
         }
 
+
         if (typeof gpxContent !== "string") {
             // Handle unexpected types here, if necessary
             console.log(`:( Unexpected GPX file contents`);
             return false;
         }
 
+
         // Prepare DataExtractionProps object
         const dataExtractionProps: DataExtractionProps = {
             readGpxFile: gpxContent,
         };
 
+        // console.log("test2")
+
+
         // Data extraction
         const dataObj = await dataExtraction(dataExtractionProps);
+
+        console.log('dataObj', dataObj);
+
 
         return dataObj;
     } catch (error) {

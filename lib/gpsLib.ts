@@ -16,6 +16,7 @@ import {
   RootAppPath,
   ReadGpxFile,
   GetStringBetweenIncludedPatterns,
+  GetStringBetweenIncludedPatternsData,
   MergeStagesTrackData,
   MergeStagesTrack,
   GetString,
@@ -39,6 +40,7 @@ import {
   GetPositionsArr,
   GetPositionsArrData,
   GetElevationArr,
+  GetElevationArrData,
   GetTagsValueArr,
   GetBounds,
   GetBoundsData,
@@ -109,27 +111,49 @@ const readGpxFile: ReadGpxFile = async (gpxFilePath) => {
 const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async ({ str, pattern1, pattern2 }) => {
   return new Promise((resolve, reject) => {
     try {
-      if (!str) {
-        resolve({ result: null });
+      // Regex
+      let regex = new RegExp(pattern1, "g");
+
+      // Count patterns
+      const matchResult = str.match(regex);
+      const patternCount = matchResult ? matchResult.length : 0;
+
+      // While loop settings
+      let i = 0;
+      let resultArray = [];
+
+      while (i < patternCount) {
+        // Number of total characters
+        const totalStr = str.length;
+
+        // Slice str to each pattern segment
+        const pattern1String = (pattern1 instanceof RegExp) ? pattern1.source : pattern1;
+        const patternPosition = str.indexOf(pattern1String);
+        const pattern2String = (pattern2 instanceof RegExp) ? pattern2.source : pattern2;
+        const patternLastPosition = str.indexOf(pattern2String) + pattern2String.length;
+        const patternStr = str.substring(patternPosition, patternLastPosition);
+
+        // Check if patternsegment is existing
+        if (patternPosition > 0) {
+          // Redefine the native string
+          str = str.substring(patternLastPosition, totalStr);
+
+          // Minify file
+          let minifiedStr = patternStr.replace(/\s\s+/g, '') // Remove spaces, tabs, empty lines
+          minifiedStr = minifiedStr.replace(/(\r\n|\n|\r)/gm, ""); // Remove linebreaks
+
+          // Record
+          resultArray.push(minifiedStr);
+        }
+
+        // Incrementation
+        i++;
+
+        if (i === patternCount) {
+          resolve({ length: resultArray.length, result: resultArray.filter(Boolean) });
+        }
       }
 
-      // Convert pattern1 and pattern2 to regular expressions if they are not already regular expressions
-      const regex1 = typeof pattern1 === 'string' ? new RegExp(pattern1, 'g') : pattern1;
-      const regex2 = typeof pattern2 === 'string' ? new RegExp(pattern2, 'g') : pattern2;
-
-      // Find all matches of pattern1 in the string
-      const matches = str.match(regex1) || [];
-
-      // Process each match and extract the substring between pattern1 and pattern2
-      const resultArray = matches.map((match: string) => {
-        const start = str.indexOf(match) + match.length;
-        const end = str.indexOf(regex2.source, start);
-        if (end === -1) return '';
-        const patternStr = str.substring(start, end);
-        return patternStr.replace(/\s+/g, '').replace(/(\r\n|\n|\r)/gm, '');
-      });
-
-      resolve({ result: resultArray.filter(Boolean) });
     } catch (error) {
       console.error("getStringBetweenIncludedPatterns error", error);
       reject(error);
@@ -370,20 +394,19 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Get track tag
-      const stagesTrackArray = await getStringBetweenIncludedPatterns({
-        str: readGpxFile,
+      const stagesTrackArray: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({
+        str: readGpxFile.toString(),
         pattern1: "<trk>",
         pattern2: "</trk>"
       });
-
 
       if (stagesTrackArray.result !== null) {
         const resArr: GetTracksData[] = [];
 
         // Listing stages track
         for (let k = 0; k < stagesTrackArray.result.length; k++) {
-          const stage = stagesTrackArray[k];
-          const trackData: GetTracksData = {
+          const stage = stagesTrackArray.result[k];
+          const trackData: any = {
             id: k,
             name: null,
             type: null,
@@ -476,25 +499,24 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
           };
 
           // Tags tracks
-          let trkptStr = await splitString(stage, "<trkpt");
+          let trkptStr = await splitString({ str: stage, pattern: "<trkpt" });
 
           // Segments tracks
-          let trksegStr = await splitString(stage, "<trkseg>");
+          let trksegStr: any = await splitString({ str: stage, pattern: "<trkseg>" });
 
           // Check if data exists
           if (trkptStr.length > 0) {
 
             // Positions array of objects
-            let positionsArrObj = await getPositionsArr(trkptStr, "\"");
+            let positionsArrObj = await getPositionsArr({ strArr: trkptStr, pattern: "\"" });
             trackData.positions["positionsArrObj"] = positionsArrObj;
 
             // Positions array of arrays
-            let positionsArrArr = await convertPositionsToArr(positionsArrObj);
+            let positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj });
             trackData.positions["positionsArrArr"] = positionsArrArr;
 
             // Distance calculation
-            // Calculate distance
-            const distance = await trackDistanceCalculation(positionsArrArr);
+            const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr.positions });
 
             // Assign distance in meters
             trackData.distance["meters"] = distance;
@@ -508,19 +530,19 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             }
 
             // Elevations
-            let elevationsArr = await getElevationsArr(trkptStr, "<ele>", "</ele>");
-            trackData.elevations["full"] = elevationsArr;
+            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr, pattern1: "<ele>", pattern2: "</ele>" });
+            const elevationsArr = elevationsResult.elevationArr;
 
             // Min elevation
-            let minEle = Math.min(...elevationsArr);
+            const minEle = Math.min(...elevationsArr);
             trackData.elevations["min"] = minEle;
 
             // Max elevation
-            let maxEle = Math.max(...elevationsArr);
+            const maxEle = Math.max(...elevationsArr);
             trackData.elevations["max"] = maxEle;
 
             // Cumulative elevations
-            let cumulativeElevations = await getCumulativeElevations(elevationsArr);
+            let cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr });
             trackData.elevations["cumulativeNegativeElevation"] = cumulativeElevations.cumulativeNegativeElevation;
             trackData.elevations["cumulativePositiveElevation"] = cumulativeElevations.cumulativePositiveElevation;
 
@@ -529,7 +551,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
 
             recordsTrkptArr.map(async (element) => {
               let arr = [trksegStr[1]];
-              let elementArr = await getTagsValueArr(arr, `<${element}>`, `</${element}>`);
+              let elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>` });
               let propertyName = `${element}s`;
               trackData[propertyName] = { full: elementArr };
             });
@@ -541,9 +563,8 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             let recordsTrkArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
 
             recordsTrkArr.map(async (element) => {
-
               // Record trk elements
-              let elementArr = await getString(stage, `<${element}>`, `</${element}>`);
+              let elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>` });
               trackData[element] = elementArr[0];
             });
 
@@ -554,7 +575,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
 
             // Route extensions
             // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
-            let extensions = await getExtensions(stage, `<extensions>`, `</extensions>`);
+            let extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>" });
             trackData.extensions = extensions[0];
 
             // Add the processed track data to the result array
@@ -877,19 +898,19 @@ const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Metadata extraction
-      const gpxFileMetadata = await getMetaData(readGpxFile);
+      const gpxFileMetadata = await getMetaData({ readGpxFile });
 
       // Routes
-      const routes = await getRoutes(readGpxFile);
+      const routes = await getRoutes({ readGpxFile });
 
       // Tracks
-      const stagesTrackData = await getTracks(readGpxFile);
+      const stagesTrackData: any = await getTracks({ readGpxFile });
 
       // Way points
-      const wayPoints = await getWayPoints(readGpxFile);
+      const wayPoints = await getWayPoints({ readGpxFile });
 
       // Merge tracks
-      const mergeStagesTrackData = await mergeStagesTrackData(stagesTrackData);
+      const mergedData: MergeStagesTrackData = await mergeStagesTrackData(stagesTrackData);
 
       // Result object
       const obj: DataExtractionData = {
@@ -897,7 +918,7 @@ const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
         wayPoints,
         routes,
         stagesTrackData,
-        mergeStagesTrackData
+        mergedData,
       };
 
       resolve(obj);
@@ -914,7 +935,7 @@ const splitString: SplitString = async ({ str, pattern }) => {
     try {
       // Split
       const resArr: string[] = str.split(pattern);
-      resolve({ resArr });
+      resolve({ resArr, length: resArr.length });
     } catch (error) {
       console.error(':( splitString error', error);
       reject(error);
@@ -1026,7 +1047,7 @@ const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Result array
-      const resArr: GetPositionsArrData[] = strArr
+      const resArr: GetPositionsArrData[] = (strArr as string[])
         .map(str => str.split(pattern))
         .filter(splitStr => !isNaN(parseFloat(splitStr[1])) && !isNaN(parseFloat(splitStr[3])))
         .map(splitStr => ({
@@ -1047,17 +1068,22 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
   return new Promise(async (resolve, reject) => {
     try {
       // If no elevations
-      if (strArr.length > 0) {
+      if (Array.isArray(strArr) && strArr.length > 0) {
         // Promise array to store results of each getString call
-        const promises = strArr.map(str => getString({ str, pattern1, pattern2 })); // Corrected call
+        const promises = strArr.map((str: string) => getString({ str, pattern1, pattern2 }));
 
         // Wait for all promises to resolve
         const results = await Promise.all(promises);
 
         // Extract elevations from results
-        const resArr = results
-          .map(eleStr => parseFloat(eleStr[1])) // Parse elevation strings to numbers
-          .filter(ele => !isNaN(ele)); // Filter out non-numeric elevations
+        const resArr: any = results
+          .map((eleStr: string[]) => {
+            if (Array.isArray(eleStr) && eleStr.length > 1) {
+              return parseFloat(eleStr[1]); // Parse elevation strings to numbers
+            }
+            return NaN;
+          })
+          .filter((ele: number) => !isNaN(ele)); // Filter out non-numeric elevations
 
         // Resolve with elevation array wrapped in an object
         resolve({ elevationArr: resArr });
@@ -1098,27 +1124,28 @@ const getBounds: GetBounds = async (metaData) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Split string
-      let a = metaData[0].split(`<bounds`);
+      const bounds = metaData.metaData.str.split(`<bounds`);
 
       // Check if bounds tag exists
-      if (a.length > 1) {
+      if (bounds.length > 1) {
         // Select values
-        let b = a[1].split("\"");
+        const selectedValue = bounds[1].split("\"");
 
         // Obj
-        let obj: GetBoundsData = {
+        const boundsDataObj: GetBoundsData = {
           bounds: {
-            minLat: parseFloat(b[1]),
-            minLon: parseFloat(b[3]),
-            maxLat: parseFloat(b[5]),
-            maxLon: parseFloat(b[7])
+            minLat: parseFloat(selectedValue[1]),
+            minLon: parseFloat(selectedValue[3]),
+            maxLat: parseFloat(selectedValue[5]),
+            maxLon: parseFloat(selectedValue[7])
           }
         };
 
-        resolve(obj);
+        // console.log("test getBounds => ".magenta, boundsDataObj);
+        resolve(boundsDataObj);
       } else {
-        // Obj2
-        let obj2: GetBoundsData = {
+        // Obj
+        const boundsDataObj: GetBoundsData = {
           bounds: {
             minLat: null,
             minLon: null,
@@ -1127,7 +1154,8 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        resolve(obj2);
+        // console.log("test getBounds => ".magenta, boundsDataObj);
+        resolve(boundsDataObj);
       }
     } catch (error) {
       console.log(":( getBounds error".red);
@@ -1141,53 +1169,44 @@ const getLink: GetLink = async (str) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Check if link tag exists
-      let check = str[0].includes(`<link`);
+      const checkedLinks = str.str.includes(`<link`);
 
-      if (check) {
+      // Data existing checking
+      if (checkedLinks) {
         // Split str
-        let a = str[0].split(`<link`);
+        const links = str.str.split(`<link`);
 
-        // Check if data exists
-        if (a.length > 1) {
-          // Get href
-          let b = a[1].split(`\"`);
-          let href = b[1];
+        // Get href
+        let linksArr = links[1].split(`"`);
+        let href = linksArr[1] ?? "";
 
-          // Get text
-          let text = await getString(a[1], `<text>`, `</text>`);
-          text = text[0];
+        // Get text
+        let textArray: string[] = await getString({ str: links[1], pattern1: `<text>`, pattern2: `</text>` });
+        let text: string = textArray[0] ?? "";
 
-          // Get type
-          let type = await getString(a[1], `<type>`, `</type>`);
-          type = type[0];
+        // Get type
+        let typeArray: string[] = await getString({ str: links[1], pattern1: `<type>`, pattern2: `</type>` });
+        let type: string = typeArray[0] ?? "";
 
-          // Obj
-          let obj: GetLinkData = {
-            href: href,
-            text: text,
-            type: type
-          };
+        // Link data obj
+        const linkDataObj: GetLinkData = {
+          href: href,
+          text: text,
+          type: type
+        };
 
-          resolve(obj);
-        } else {
-          // Obj2
-          let obj2: GetLinkData = {
-            href: null,
-            text: null,
-            type: null
-          };
-
-          resolve(obj2);
-        }
+        // console.log("test getLink => ".magenta, linkDataObj);
+        resolve(linkDataObj);
       } else {
-        // Retourne un objet avec des valeurs null
-        let objEmpty: GetLinkData = {
+        // Return an empty object
+        let linkDataObj: GetLinkData = {
           href: null,
           text: null,
           type: null
         };
 
-        resolve(objEmpty);
+        // console.log("test getLink => ".magenta, linkDataObj);
+        resolve(linkDataObj);
       }
     } catch (error) {
       console.log(":( getLink error".red);
@@ -1198,7 +1217,6 @@ const getLink: GetLink = async (str) => {
 
 // Get metadata from a GPX file
 const getMetaData: GetMetaData = async ({ readGpxFile }) => {
-  console.log("readGpxFile")
   return new Promise(async (resolve, reject) => {
     try {
       let metadataObj: GetMetaDataData = {
@@ -1216,54 +1234,60 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
         }
       };
 
-      let gpxFileCreatorName: string | null = null;
-
       // Extract creator name from the GPX file
-      let metaDataFileCreatorName = await getStringBetweenIncludedPatterns(readGpxFile, "creator=", "<metadata>");
+      const resultData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "creator=", pattern2: "<metadata>" });
 
-      if (metaDataFileCreatorName !== null) {
-        gpxFileCreatorName = metaDataFileCreatorName[0].split("\"")[1];
+      // Default
+      let gpxFileCreatorName = "";
+
+      if (resultData.result && resultData.result.length > 0) {
+        gpxFileCreatorName = resultData.result[0].split("\"")[1];
       } else {
-        gpxFileCreatorName = null;
-        console.log(":( Gpx file is wrong. Check xml tag in your gpx file.".red)
+        console.log(`:| The "<gpx />" tag does not contained the "creator" property.`.yellow);
       }
 
       // Extract metadata from the GPX file
-      let metaData = await getStringBetweenIncludedPatterns(readGpxFile, "<metadata>", "</metadata>");
+      const metaData: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>" });
 
-      if (metaData !== null) {
-        // Extract bounds and link from the metadata
-        let boundsObj: GetBoundsData | null = await getBounds(metaData);
-        let linkObj: GetLinkData | null = await getLink(metaData[0]);
+      if (metaData.result) {
+        // Extract bounds from the metadata
+        const boundsObj: GetBoundsData = await getBounds({ metaData: { str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>" } });
 
-        let arr = [`name`, `desc`, `author`, `copyright`, `time`, `keywords`, `extensions`];
-        let resArr: string[] = [];
+        // Extract links from metadata
+        const linkObj: GetLinkData | null = await getLink({ str: readGpxFile, pattern: "<metadata>", pattern2: "</metadata>" });
 
-        arr.forEach(async (element, i) => {
-          let data = metaData[0].substring(metaData[0].lastIndexOf(`<${element}>`) + `<${element}>`.length, metaData[0].lastIndexOf(`</${element}>`));
+        const arr = [`name`, `desc`, `author`, `copyright`, `time`, `keywords`, `extensions`];
+        const resArr: string[] = [];
 
-          if (data.substring(0, 5) === "<meta") {
+        for (const element of arr) {
+          let data: string | null = metaData.result[0].substring(metaData.result[0].lastIndexOf(`<${element}>`) + `<${element}>`.length, metaData.result[0].lastIndexOf(`</${element}>`));
+
+          if (data !== null && data.substring(0, 5) === "<meta") {
             data = null;
           }
 
-          resArr.push(data);
+          if (data !== null) {
+            resArr.push(data);
+          }
+        }
 
-          if (i + 1 === arr.length) {
-            Object.keys(metadataObj.gpxFileMetadata).forEach((property, f) => {
-              metadataObj.gpxFileMetadata[property] = resArr[f - 1];
+        // Assign extracted metadata to metadataObj
+        Object.keys(metadataObj.gpxFileMetadata).forEach((property, f) => {
+          metadataObj.gpxFileMetadata[property] = resArr[f - 1];
+          if (Object.keys(metadataObj.gpxFileMetadata).length === f + 1) {
+            metadataObj.gpxFileMetadata.gpxFileCreatorName = gpxFileCreatorName;
+            metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
+            metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
 
-              if (Object.keys(metadataObj.gpxFileMetadata).length === f + 1) {
-                metadataObj.gpxFileMetadata.gpxFileCreatorName = gpxFileCreatorName;
-                metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
-                metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
-
-                resolve(metadataObj);
-              }
-            });
+            // console.log("test getMetaData => ".magenta, metadataObj);
+            resolve(metadataObj);
           }
         });
       } else {
-        console.log(":( Gpx file is wrong. Check metadata tag in your gpx file.".red)
+        console.log(":( Gpx file is wrong. Check metadata tag in your gpx file.".red);
+
+        // console.log("test getMetaData => ".magenta, metadataObj);
+        resolve(metadataObj);
       }
     } catch (error) {
       console.log(':( getMetaData error'.red);

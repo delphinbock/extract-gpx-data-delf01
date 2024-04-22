@@ -358,7 +358,7 @@ interface DataExtractionData {
   wayPoints: GetWayPointsData[];
   routes: GetRoutesData[];
   stagesTrackData: GetTracksData[];
-  mergeStagesTrackData: any;
+  mergedData: any;
 }
 
 type DataExtraction = (props: DataExtractionProps) => Promise<DataExtractionData>;
@@ -366,7 +366,7 @@ type DataExtraction = (props: DataExtractionProps) => Promise<DataExtractionData
 // Split string
 interface SplitStringParams {
   str: string;
-  pattern: string | RegExp;
+  pattern: string;
 }
 
 interface SplitStringData {
@@ -404,7 +404,7 @@ type ConvertPositionsToArr = (props: ConvertPositionsToArrProps) => Promise<Conv
 
 // Get selected string from string
 interface GetPositionsArrProps {
-  strArr: string[];
+  strArr: string[] | SplitStringData;
   pattern: string;
 }
 
@@ -417,7 +417,7 @@ type GetPositionsArr = (props: GetPositionsArrProps) => Promise<GetPositionsArrD
 
 // Get elevations
 interface GetElevationArrProps {
-  strArr: string[];
+  strArr: string[] | SplitStringData;
   pattern1: string | RegExp;
   pattern2: string | RegExp;
 }
@@ -510,6 +510,7 @@ export {
   RootAppPath,
   ReadGpxFile,
   GetStringBetweenIncludedPatterns,
+  GetStringBetweenIncludedPatternsData,
   MergeStagesTrack,
   MergeStagesTrackData,
   GetString,
@@ -535,6 +536,7 @@ export {
   GetPositionsArr,
   GetPositionsArrData,
   GetElevationArr,
+  GetElevationArrData,
   GetTagsValueArr,
   GetBounds,
   GetBoundsData,
