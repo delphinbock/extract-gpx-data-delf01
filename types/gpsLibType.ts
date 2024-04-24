@@ -41,6 +41,11 @@ interface StageData {
   elevations: {
     full: number[];
   };
+  cumulativeElevations: {
+    cumulativePositiveElevation: number | null;
+    cumulativeNegativeElevation: number | null;
+    cumulativeElevationArrObj: { id: string }[];
+  };
 }
 
 interface MergeStagesTrackData {
@@ -118,7 +123,7 @@ interface GetTracksProps {
 
 interface GetTracksData {
   [key: string]: any;
-  id: number;
+  id: null | string;
   name: string | null;
   type: string | null;
   cmt: string | null;
@@ -128,7 +133,7 @@ interface GetTracksData {
   urlname: string | null;
   number: string | null;
   link: any;
-  extensions: string | null;
+  extensions: string | null | GetExtensionsData;
   distance: {
     meters: number | null;
     yards: number | null;
@@ -213,7 +218,6 @@ type GetTracks = (props: GetTracksProps) => Promise<GetTracksData[]>;
 
 // Routes
 interface GetRoutesData {
-  routeData: any;
   [key: string]: any;
   id: number | null;
   name: string | null;

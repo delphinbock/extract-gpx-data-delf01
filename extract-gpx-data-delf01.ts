@@ -4,26 +4,21 @@ import { readGpxFile, dataExtraction } from './lib/gpsLib';
 // Types
 import { DataExtractionProps } from './types/gpsLibType';
 
-const extractGpxData = async (gpxFilePath: string): Promise<any> => {
+const extractGpxData = async (gpxFilePath: string, debugMode: boolean): Promise<any> => {
     try {
         if (typeof gpxFilePath !== "string") {
             console.log(`:( GPX file ${gpxFilePath} is wrong`);
             return false;
         }
 
-       //  console.log('gpxFilePath', gpxFilePath);
-
         // Read the Gpx file
         const gpxContent: string | false = await readGpxFile(gpxFilePath);
 
-  
-
-        // Check existing file
+          // Check existing file
         if (typeof gpxContent === "boolean" && gpxContent === false) {
             console.log(`:( Unable to read file "${gpxFilePath}"`);
             return false;
         }
-
 
         if (typeof gpxContent !== "string") {
             // Handle unexpected types here, if necessary
@@ -37,14 +32,10 @@ const extractGpxData = async (gpxFilePath: string): Promise<any> => {
             readGpxFile: gpxContent,
         };
 
-        // console.log("test2")
-
-
         // Data extraction
         const dataObj = await dataExtraction(dataExtractionProps);
 
-        console.log('dataObj', dataObj);
-
+        console.log('dataObj', JSON.stringify(dataObj.mergedData));
 
         return dataObj;
     } catch (error) {

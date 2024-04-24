@@ -11,6 +11,9 @@ import * as path from 'path';
 import { promisify } from 'util';
 const readFileAsync = promisify(fs.readFile);
 
+// Debug mode
+const debugMode = false;
+
 // Types
 import {
   RootAppPath,
@@ -33,6 +36,7 @@ import {
   DataExtraction,
   DataExtractionData,
   SplitString,
+  SplitStringData,
   GetCumulativeElevations,
   GetCumulativeElevationsData,
   ConvertPositionsToArr,
@@ -50,6 +54,7 @@ import {
   GetMetaDataData,
   CalculateDistanceBetweenPositions,
   TrackDistanceCalculation,
+  StageData,
 } from '../types/gpsLibType';
 
 // Root app directory
@@ -165,113 +170,205 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
 const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // Initialize the merged data object
-      const mergeStagesTrackData: MergeStagesTrackData = {
-        namesArrObj: [],
-        typeArrObj: [],
-        cmtArrObj: [],
-        descArrObj: [],
-        srcArrObj: [],
-        urlArrObj: [],
-        urlnameArrObj: [],
-        linkArrObj: [],
-        numberArrObj: [],
-        extensionsArrObj: [],
-        distances: {
-          full: {
-            meters: null,
-            yards: null,
+      // Settings
+      let positionsFullArr: any[] = [];
+      let elevationsFullArr: any[] = [];
+      let distancesFullArr: number[] = [];
+
+      // Listing each stage
+      stagesTrackArr.forEach(async (stage, i) => {
+        // Result object
+        const mergeStagesTrackData: MergeStagesTrackData = {
+          namesArrObj: [],
+          typeArrObj: [],
+          cmtArrObj: [],
+          descArrObj: [],
+          srcArrObj: [],
+          urlArrObj: [],
+          urlnameArrObj: [],
+          linkArrObj: [],
+          numberArrObj: [],
+          extensionsArrObj: [],
+          distances: {
+            full: {
+              meters: null,
+              yards: null
+            },
+            distancesArrObj: []
           },
-          distancesArrObj: [],
-        },
-        positions: {
-          full: [],
-          positionsArrObj: [],
-        },
-        elevations: {
-          full: [],
-          min: null,
-          max: null,
-          minMaxArrObj: [],
-        },
-        cumulativeElevations: {
-          cumulativePositiveElevation: null,
-          cumulativeNegativeElevation: null,
-          cumulativeElevationArrObj: [],
-        },
-      };
+          positions: {
+            full: [],
+            positionsArrObj: []
+          },
+          elevations: {
+            full: [],
+            min: null,
+            max: null,
+            minMaxArrObj: []
+          },
+          cumulativeElevations: {
+            cumulativePositiveElevation: null,
+            cumulativeNegativeElevation: null,
+            cumulativeElevationArrObj: []
+          }
+        }
 
-      // Default variable
-      mergeStagesTrackData.distances.full.meters = 0;
 
-      // Loop through each stage
-      for (const stage of stagesTrackArr) {
-        const {
-          id,
-          name,
-          type,
-          cmt,
-          desc,
-          src,
-          url,
-          urlname,
-          link,
-          number,
-          extensions,
-          positions,
-          distance,
-          elevations
-        } = stage;
+        // ID
+        const id = i.toString();
 
-        // Merge data for each stage
-        mergeStagesTrackData.namesArrObj.push({ id: id, name: name });
-        mergeStagesTrackData.typeArrObj.push({ id: id, type: type });
-        mergeStagesTrackData.cmtArrObj.push({ id: id, type: cmt });
-        mergeStagesTrackData.descArrObj.push({ id: id, type: desc });
-        mergeStagesTrackData.srcArrObj.push({ id: id, type: src });
-        mergeStagesTrackData.urlArrObj.push({ id: id, type: url });
-        mergeStagesTrackData.urlnameArrObj.push({ id: id, type: urlname });
-        mergeStagesTrackData.linkArrObj.push({ id: id, type: link });
-        mergeStagesTrackData.numberArrObj.push({ id: id, type: number });
-        mergeStagesTrackData.extensionsArrObj.push({ id: id, type: extensions });
+        // Merge names
+        let nameObj = {
+          id: id,
+          name: stage.name
+        };
 
-        // Merge positions
-        mergeStagesTrackData.positions.positionsArrObj.push({ positions: positions });
+        // Merge types
+        let typeObj = {
+          id: id,
+          type: stage.type
+        };
 
-        // Merge distances
-        mergeStagesTrackData.distances.distancesArrObj.push({ id: id, distance: distance });
+        // Merge comments
+        let cmtObj = {
+          id: id,
+          type: stage.cmt
+        };
 
-        // Merge elevations
-        mergeStagesTrackData.elevations.minMaxArrObj.push({ id: id, elevations: elevations.full });
+        // Merge descriptions
+        let descObj = {
+          id: id,
+          type: stage.desc
+        };
 
-        // Add data to full arrays
-        mergeStagesTrackData.positions.full.push(...positions.positionsArrObj);
-        mergeStagesTrackData.elevations.full.push(...elevations.full);
-        mergeStagesTrackData.distances.full.meters += distance.meters;
+        // Merge sources
+        let srcObj = {
+          id: id,
+          type: stage.src
+        };
+
+        // Merge url
+        let urlObj = {
+          id: id,
+          type: stage.url
+        };
+
+        // Merge urlname
+        let urlnameObj = {
+          id: id,
+          type: stage.urlname
+        };
+
+        // Merge link
+        let linkObj = {
+          id: id,
+          type: stage.link
+        };
+
+        // Merge number
+        let numberObj = {
+          id: id,
+          type: stage.number
+        };
+
+        // Merge extensions
+        let extensionsObj = {
+          id: id,
+          type: stage.extensions
+        };
+
+        // Positions array of objects
+        let positionsObj = {
+          id: id,
+          positions: stage.positions.positionsArrObj
+        };
+
+        // Distance array of objects
+        let distancesObj = {
+          id: id,
+          distance: {
+            meters: stage.distance.meters,
+            yards: stage.distance.yards
+          }
+        };
+
+        // Elevations array
+        let eleObj = {
+          id: id,
+          elevations: stage.elevations.full
+        };
 
         // Cumulative elevations
-        const cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevations.full });
-        if (mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation !== null) {
-          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation ??= 0;
-          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation += cumulativeElevations.cumulativePositiveElevation;
-        }
-        if (mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation !== null) {
-          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation ??= 0;
-          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation += cumulativeElevations.cumulativeNegativeElevation;
-        }
-      }
+        const cumulativeElevationsObj = {
+          id: id,
+          cumulativePositiveElevations: null,
+          cumulativeNegativeElevations: null
+        };
 
-      // Calculate additional data
-      if (mergeStagesTrackData.distances.full.meters !== null) {
-        const metersToYards = mergeStagesTrackData.distances.full.meters * 1.093613;
-        mergeStagesTrackData.distances.full.yards = Math.round(parseFloat(metersToYards.toFixed(2)));
-      } else {
-        mergeStagesTrackData.distances.full.yards = null;
-      }
-      mergeStagesTrackData.elevations.min = Math.min(...mergeStagesTrackData.elevations.full);
-      mergeStagesTrackData.elevations.max = Math.max(...mergeStagesTrackData.elevations.full);
+        // FIXME manque le cumulativeElevationsObj dans le stage reçu 
+        console.log("stage", stage)
 
-      resolve(mergeStagesTrackData);
+        // Positions full
+        positionsFullArr.push(stage.positions.positionsArrObj);
+
+        // Elevations full
+        elevationsFullArr.push(stage.elevations.full);
+
+        // Distances full
+        distancesFullArr.push(stage.distance.meters);
+
+        // Records
+        mergeStagesTrackData.namesArrObj.push(nameObj); // names
+        mergeStagesTrackData.typeArrObj.push(typeObj); // types
+        mergeStagesTrackData.cmtArrObj.push(cmtObj); // comments
+        mergeStagesTrackData.descArrObj.push(descObj); // descriptions
+        mergeStagesTrackData.srcArrObj.push(srcObj); // sources
+        mergeStagesTrackData.urlArrObj.push(urlObj); // url
+        mergeStagesTrackData.urlnameArrObj.push(urlnameObj); // urlname
+        mergeStagesTrackData.numberArrObj.push(numberObj); // number
+        mergeStagesTrackData.linkArrObj.push(linkObj); // link
+        mergeStagesTrackData.extensionsArrObj.push(extensionsObj); // extensions
+        mergeStagesTrackData.positions.positionsArrObj.push(positionsObj); // array of positions objects
+        mergeStagesTrackData.distances.distancesArrObj.push(distancesObj); // array of distances objects
+        mergeStagesTrackData.elevations.minMaxArrObj.push(eleObj); // array of elevations objects
+        console.log(cumulativeElevationsObj)
+        mergeStagesTrackData.cumulativeElevations.cumulativeElevationArrObj.push(cumulativeElevationsObj); // array of cumulative elevations objects
+
+        // End loop
+        if (stagesTrackArr.length === i + 1) {
+          // Positions
+          positionsFullArr = positionsFullArr.flat();
+          mergeStagesTrackData.positions.full = positionsFullArr;
+
+          // Elevations
+          elevationsFullArr = elevationsFullArr.flat();
+          mergeStagesTrackData.elevations.full = elevationsFullArr;
+
+          // Distances
+          const distancesFullArrCalc = distancesFullArr.reduce((a, b) => a + b, 0);
+          mergeStagesTrackData.distances.full.meters = distancesFullArrCalc;
+          mergeStagesTrackData.distances.full.yards = parseInt((distancesFullArrCalc * 1.093613).toString());
+
+          // Min elevation
+          mergeStagesTrackData.elevations.min = Math.min(...elevationsFullArr);
+
+          // Max elevation
+          mergeStagesTrackData.elevations.max = Math.max(...elevationsFullArr);
+
+          // Cumulative elevations
+          let cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevationsFullArr });
+
+          // Cumulative positive elevation
+          let cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
+          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation = cumulativePositiveElevation;
+
+          // Cumulative negative elevation
+          let cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
+          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation = cumulativeNegativeElevation;
+
+          resolve(mergeStagesTrackData);
+        }
+      });
     } catch (error) {
       console.error(':( mergeStagesTrackData error'.red);
       reject(error);
@@ -290,15 +387,11 @@ const getString: GetString = async ({ str, pattern1, pattern2 }) => {
       const regex2 = /(<([^>]+)>)/gi;
 
       // Match strings between tags
-      const matches = str.match(regex1);
+      const matches = str && str.match(regex1);
 
-      if (matches !== null) {
+      if (matches) {
         // Extract and clean the strings
-        const result = matches.map((match) => {
-          // Remove HTML tags
-          const cleanString = match.replace(regex2, "");
-          return cleanString;
-        });
+        const result = matches.map((match) => match.replace(regex2, ""));
 
         resolve(result);
       } else {
@@ -370,7 +463,7 @@ const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
       // Match strings between tags
       const matches = str.match(regexStr);
 
-      if (matches !== null) {
+      if (matches) {
         // Extract extensions
         const result: GetExtensionsData[] = matches.map((match) => {
           const extension = match.substring((pattern1 instanceof RegExp) ? pattern1.source.length : pattern1.length, match.length - ((pattern2 instanceof RegExp) ? pattern2.source.length : pattern2.length));
@@ -400,219 +493,14 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
         pattern2: "</trk>"
       });
 
-      if (stagesTrackArray.result !== null) {
+      if (stagesTrackArray.result) {
+        // Default
         const resArr: GetTracksData[] = [];
 
         // Listing stages track
         for (let k = 0; k < stagesTrackArray.result.length; k++) {
-          const stage = stagesTrackArray.result[k];
-          const trackData: any = {
-            id: k,
-            name: null,
-            type: null,
-            cmt: null,
-            desc: null,
-            src: null,
-            url: null,
-            urlname: null,
-            number: null,
-            link: null,
-            extensions: null,
-            distance: {
-              meters: null,
-              yards: null,
-            },
-            elevations: {
-              full: [],
-              min: null,
-              max: null,
-              cumulativePositiveElevation: null,
-              cumulativeNegativeElevation: null,
-            },
-            positions: {
-              positionsArrObj: [],
-              positionsArrArr: [],
-            },
-            times: {
-              full: [],
-            },
-            magvars: {
-              full: [],
-            },
-            geoidheights: {
-              full: [],
-            },
-            names: {
-              full: [],
-            },
-            cmts: {
-              full: [],
-            },
-            descs: {
-              full: [],
-            },
-            srcs: {
-              full: [],
-            },
-            urls: {
-              full: [],
-            },
-            urlnames: {
-              full: [],
-            },
-            syms: {
-              full: [],
-            },
-            types: {
-              full: [],
-            },
-            fixs: {
-              full: [],
-            },
-            sats: {
-              full: [],
-            },
-            hdops: {
-              full: [],
-            },
-            vdops: {
-              full: [],
-            },
-            pdops: {
-              full: [],
-            },
-            ageofdgpsdatas: {
-              full: [],
-            },
-            dgpsids: {
-              full: [],
-            },
-            extensionss: {
-              full: [],
-            },
-            speeds: {
-              full: [],
-            },
-            courses: {
-              full: [],
-            },
-          };
-
-          // Tags tracks
-          let trkptStr = await splitString({ str: stage, pattern: "<trkpt" });
-
-          // Segments tracks
-          let trksegStr: any = await splitString({ str: stage, pattern: "<trkseg>" });
-
-          // Check if data exists
-          if (trkptStr.length > 0) {
-
-            // Positions array of objects
-            let positionsArrObj = await getPositionsArr({ strArr: trkptStr, pattern: "\"" });
-            trackData.positions["positionsArrObj"] = positionsArrObj;
-
-            // Positions array of arrays
-            let positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj });
-            trackData.positions["positionsArrArr"] = positionsArrArr;
-
-            // Distance calculation
-            const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr.positions });
-
-            // Assign distance in meters
-            trackData.distance["meters"] = distance;
-
-            // Convert distance to yards if it's a number
-            if (typeof distance === 'number') {
-              trackData.distance["yards"] = distance * 1.093613;
-            } else {
-              // Handle the case where distance is not a number
-              trackData.distance["yards"] = null;
-            }
-
-            // Elevations
-            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr, pattern1: "<ele>", pattern2: "</ele>" });
-            const elevationsArr = elevationsResult.elevationArr;
-
-            // Min elevation
-            const minEle = Math.min(...elevationsArr);
-            trackData.elevations["min"] = minEle;
-
-            // Max elevation
-            const maxEle = Math.max(...elevationsArr);
-            trackData.elevations["max"] = maxEle;
-
-            // Cumulative elevations
-            let cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr });
-            trackData.elevations["cumulativeNegativeElevation"] = cumulativeElevations.cumulativeNegativeElevation;
-            trackData.elevations["cumulativePositiveElevation"] = cumulativeElevations.cumulativePositiveElevation;
-
-            // Track points records
-            let recordsTrkptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "extensions", "speed", "course"];
-
-            recordsTrkptArr.map(async (element) => {
-              let arr = [trksegStr[1]];
-              let elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>` });
-              let propertyName = `${element}s`;
-              trackData[propertyName] = { full: elementArr };
-            });
-
-            // ID
-            trackData["id"] = k;
-
-            // Records trk "name", "type", "cmt", "desc", "src", "url", "urlname", "number" tags
-            let recordsTrkArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
-
-            recordsTrkArr.map(async (element) => {
-              // Record trk elements
-              let elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>` });
-              trackData[element] = elementArr[0];
-            });
-
-            // Link
-            // <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link>
-            let linkObj = await getLinkTrk(stage);
-            trackData.link = linkObj;
-
-            // Route extensions
-            // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
-            let extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>" });
-            trackData.extensions = extensions[0];
-
-            // Add the processed track data to the result array
-            resArr.push(trackData);
-          }
-        }
-
-        resolve(resArr);
-      } else {
-        console.log(":| No tracks in the gpx file.");
-        resolve([]);
-      }
-    } catch (error) {
-      console.error(':( getTracks error', error);
-      reject(error);
-    }
-  });
-};
-
-// Routes
-const getRoutes: GetRoutes = async ({ readGpxFile }) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Get route tag
-      const routesArr = await getStringBetweenIncludedPatterns({
-        str: readGpxFile,
-        pattern1: "<rte>",
-        pattern2: "</rte>"
-      });
-
-      if (routesArr.result !== null) {
-        const resArr: GetRoutesData[] = [];
-
-        // Listing routes
-        for (const route of routesArr.result) {
-          const routeData: GetRoutesData = {
-            routeData: null,
+          // Default obj
+          const trackData: GetTracksData = {
             id: null,
             name: null,
             type: null,
@@ -704,13 +592,235 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             },
           };
 
+          // Default
+          const stage = stagesTrackArray.result[k];
+
+          // Tags tracks
+          const trkptStr: SplitStringData = await splitString({ str: stage, pattern: "<trkpt" });
+
+          // Segments tracks
+          const trksegStr: any = await splitString({ str: stage, pattern: "<trkseg>" });
+
+          // Check if data exists
+          if (trkptStr.length > 0) {
+            // ID track
+            trackData.id = k.toString();
+
+            // Positions array of objects
+            const positionsArrObj = await getPositionsArr({ strArr: trkptStr.resArr, pattern: "\"" });
+            trackData.positions.positionsArrObj = positionsArrObj;
+
+            // Positions array of arrays
+            const positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj });
+            if (Array.isArray(positionsArrArr)) {
+              trackData.positions.positionsArrArr = positionsArrArr;
+            }
+
+            // Distance calculation
+            const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr.positions });
+
+            // Assign distance in meters
+            trackData.distance.meters = distance;
+
+            // Convert distance to yards if it's a number
+            if (typeof distance === 'number') {
+              trackData.distance.yards = distance * 1.093613;
+            } else {
+              // Handle the case where distance is not a number
+              trackData.distance.yards = null;
+            }
+
+            // Elevations
+            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr.resArr, pattern1: "<ele>", pattern2: "</ele>" });
+            const elevationsArr = elevationsResult.elevationArr;
+
+            // Full elevations
+            trackData.elevations.full = elevationsArr;
+
+            // Min elevation
+            const minEle = Math.min(...elevationsArr);
+            trackData.elevations.min = minEle;
+
+            // Max elevation
+            const maxEle = Math.max(...elevationsArr);
+            trackData.elevations.max = maxEle;
+
+            // Cumulative elevations
+            const cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr });
+            trackData.elevations.cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
+            trackData.elevations.cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
+
+            // Track points records
+            const recordsTrkptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "extensions", "speed", "course"];
+
+            recordsTrkptArr.map(async (element) => {
+              const arr = [trksegStr[1]];
+              const elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              const propertyName = `${element}s`;
+              trackData[propertyName] = { full: elementArr };
+            });
+
+            // ID
+            trackData["id"] = k.toString();
+
+            // Records trk "name", "type", "cmt", "desc", "src", "url", "urlname", "number" tags
+            const recordsTrkArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
+
+            recordsTrkArr.map(async (element) => {
+              // Record trk elements
+              const elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              trackData[element] = elementArr[0];
+            });
+
+            // Link
+            // <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link>
+            const linkObj = await getLinkTrk(stage);
+            trackData.link = linkObj;
+
+            // Route extensions
+            // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
+            const extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>" });
+            trackData.extensions = extensions[0];
+
+            // Add the processed track data to the result array
+            resArr.push(trackData);
+          }
+        }
+
+        debugMode && console.log(`test getTracks => `.magenta, resArr);
+        resolve(resArr);
+      } else {
+        console.log(":| No tracks in the gpx file.");
+        resolve([]);
+      }
+    } catch (error) {
+      console.error(':( getTracks error', error);
+      reject(error);
+    }
+  });
+};
+
+// Routes
+const getRoutes: GetRoutes = async ({ readGpxFile }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Get route tag
+      const routesArr = await getStringBetweenIncludedPatterns({
+        str: readGpxFile,
+        pattern1: "<rte>",
+        pattern2: "</rte>"
+      });
+
+      if (routesArr.result) {
+        const resArr: GetRoutesData[] = [];
+
+        // Listing routes
+        for (let i = 0; i < routesArr.result.length; i++) {
+          // Default
+          const route = routesArr.result[i];
+
+          const routeData: GetRoutesData = {
+            id: null,
+            name: null,
+            type: null,
+            cmt: null,
+            desc: null,
+            src: null,
+            url: null,
+            urlname: null,
+            number: null,
+            link: null,
+            extensions: null,
+            distance: {
+              meters: null,
+              yards: null,
+            },
+            elevations: {
+              full: [],
+              min: null,
+              max: null,
+              cumulativePositiveElevation: null,
+              cumulativeNegativeElevation: null,
+            },
+            positions: {
+              positionsArrObj: [],
+              positionsArrArr: [],
+            },
+            times: {
+              full: [],
+            },
+            magvars: {
+              full: [],
+            },
+            geoidheights: {
+              full: [],
+            },
+            names: {
+              full: [],
+            },
+            cmts: {
+              full: [],
+            },
+            descs: {
+              full: [],
+            },
+            srcs: {
+              full: [],
+            },
+            urls: {
+              full: [],
+            },
+            urlnames: {
+              full: [],
+            },
+            syms: {
+              full: [],
+            },
+            types: {
+              full: [],
+            },
+            fixs: {
+              full: [],
+            },
+            sats: {
+              full: [],
+            },
+            hdops: {
+              full: [],
+            },
+            vdops: {
+              full: [],
+            },
+            pdops: {
+              full: [],
+            },
+            ageofdgpsdatas: {
+              full: [],
+            },
+            dgpsids: {
+              full: [],
+            },
+            extensionss: {
+              full: [],
+            },
+            speeds: {
+              full: [],
+            },
+            courses: {
+              full: [],
+            },
+          };
+
+          // Route ID
+          routeData.id = i
+
           // Route points tags
           const rteptStrArr = await splitString({ str: route, pattern: "<rtept" });
 
           if (rteptStrArr.resArr.length > 0) {
             // Positions array of objects
             const positionsArrObj = await getPositionsArr({ strArr: rteptStrArr.resArr, pattern: "\"" });
-            routeData.positions["positionsArrObj"] = positionsArrObj;
+            routeData.positions.positionsArrObj = positionsArrObj;
 
             // Positions array of arrays
             const positionsArrArr = (await convertPositionsToArr({ positionsArrObj })).positions;
@@ -718,8 +828,8 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
 
             // Distance calculation
             const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr });
-            routeData.distance["meters"] = distance;
-            routeData.distance["yards"] = typeof distance === 'number' ? distance * 1.093613 : null;
+            routeData.distance.meters = distance;
+            routeData.distance.yards = typeof distance === 'number' ? distance * 1.093613 : null;
 
             // Elevations
             const elevationsArrData = await getElevationsArr({
@@ -729,16 +839,16 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             });
 
             const elevationsArr = elevationsArrData.elevationArr;
-            routeData.elevations["full"] = elevationsArr;
+            routeData.elevations.full = elevationsArr;
 
             // Min and max elevation
-            routeData.elevations["min"] = Math.min(...elevationsArr);
-            routeData.elevations["max"] = Math.max(...elevationsArr);
+            routeData.elevations.min = Math.min(...elevationsArr);
+            routeData.elevations.max = Math.max(...elevationsArr);
 
             // Cumulative elevations
             const cumulativeElevations = await getCumulativeElevations({ elevationsArr });
-            routeData.elevations["cumulativeNegativeElevation"] = cumulativeElevations.cumulativeNegativeElevation;
-            routeData.elevations["cumulativePositiveElevation"] = cumulativeElevations.cumulativePositiveElevation;
+            routeData.elevations.cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
+            routeData.elevations.cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
 
             // Record route points tags
             const recordsRteptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "extensions", "speed", "course"];
@@ -748,7 +858,7 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
                 const elementArr = await getTagsValueArr({ strArr: [rteptStrArr.resArr[0]], pattern1: `<${element}>`, pattern2: `</${element}>` });
                 routeData[`${element}s`] = { full: elementArr.tagsValueArr };
               } else {
-                throw new Error(`rteptStrArr.resArr does not contain enough elements for ${element}`);
+                console.log(`rteptStrArr.resArr does not contain enough elements for ${element}`);
               }
             }));
 
@@ -785,9 +895,12 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             resArr.push(routeData);
           }
         }
+
+        debugMode && console.log(`test getRoutes => `.magenta, resArr);
         resolve(resArr);
       } else {
         console.log(":| No routes in the gpx file.");
+        debugMode && console.log(`test getRoutes => `.magenta, []);
         resolve([]);
       }
     } catch (error) {
@@ -808,12 +921,13 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
         pattern2: "</wpt>"
       });
 
-      if (wayPointsArray.result !== null) {
+      if (wayPointsArray.result) {
         const resArr: GetWayPointsData[] = [];
 
         // Listing way points
-        for (let m = 0; m < wayPointsArray.length; m++) {
+        for (let m = 0; m < wayPointsArray.result.length; m++) {
           const point = wayPointsArray.result[m];
+
           const wayPointsData: GetWayPointsData = {
             id: m,
             name: null,
@@ -846,7 +960,7 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
           const wptStr = await splitString({ str: point, pattern: "<wpt" });
 
           // Check if data exists
-          if (wptStr.length > 0) {
+          if (wptStr.resArr.length > 0) {
             // Position
             const positionsArrObj = await getPositionsArr({ strArr: wptStr.resArr, pattern: "\"" });
             wayPointsData.position = `${positionsArrObj[0].lat},${positionsArrObj[0].lon}`;
@@ -870,20 +984,27 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
             // Record wpt elements
             const recordsWptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "speed", "course"];
 
-            for (const element of recordsWptArr) {
+            recordsWptArr.map(async (element) => {
+              // Record wpt elements
               const elementArr = await getTagsValueArr({ strArr: wptStr.resArr, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              wayPointsData[element] = elementArr.tagsValueArr[1];
+            });
 
-              wayPointsData[element] = elementArr.tagsValueArr[0];
-            }
+            // ID
+            wayPointsData["id"] = m;
 
             // Record
             resArr.push(wayPointsData);
           }
         }
+
+        debugMode && console.log(`test getWayPoints => `.magenta, resArr);
         resolve(resArr);
       } else {
         // Console message
-        console.log(":| No way points in the gpx file.".cyan);
+        console.log(":| No way points in the gpx file.".yellow);
+
+        debugMode && console.log(`test getWayPoints => `.magenta, []);
         resolve([]);
       }
     } catch (error) {
@@ -947,74 +1068,29 @@ const splitString: SplitString = async ({ str, pattern }) => {
 const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // If no elevation tags
-      if (elevationsArr.length === 0) {
-        const obj1: GetCumulativeElevationsData = {
-          cumulativeNegativeElevation: 0,
-          cumulativePositiveElevation: 0
-        };
-        resolve(obj1);
-      }
+      // Default
+      let cumulativeNegativeElevation = 0;
+      let cumulativePositiveElevation = 0;
 
-      // If elevation tags exist
+      // Check existing elevations values
       if (elevationsArr.length > 1) {
-        // Listing elevation
-        const e = elevationsArr.map(async (elevation, i) => {
-          // Stop at last item array
-          if (elevationsArr[i + 1] !== undefined) {
-            // Calculation between each elevation
-            return elevationsArr[i + 1] - elevationsArr[i];
+        // Elevations calculation
+        for (const elevation of elevationsArr) {
+          if (elevation < 0) {
+            cumulativeNegativeElevation += elevation;
+          } else {
+            cumulativePositiveElevation += elevation;
           }
-        });
-
-        // Reducer
-        const reducer = (previousValue: number, currentValue: number) => previousValue + currentValue;
-
-        // Get promises
-        const promises = await Promise.all(e);
-
-        // Filter to remove undefined values
-        const eleArr = promises.filter(Boolean) as number[];
-
-        // Cumulative positive elevation
-        let positiveEleArr = eleArr.filter((value) => value > 0);
-
-        // Check if data exists
-        let cumulativePositiveElevation: number;
-        if (positiveEleArr.length !== 0) {
-          cumulativePositiveElevation = positiveEleArr.reduce(reducer);
-          cumulativePositiveElevation = Number(cumulativePositiveElevation.toFixed(2));
-        } else {
-          cumulativePositiveElevation = 0;
         }
-
-        // Cumulative negative elevation
-        let negativeEleArr = eleArr.filter((value) => value < 0);
-
-        // Check if data exists
-        let cumulativeNegativeElevation: number;
-        if (negativeEleArr.length !== 0) {
-          cumulativeNegativeElevation = negativeEleArr.reduce(reducer);
-          cumulativeNegativeElevation = Number(cumulativeNegativeElevation.toFixed(2));
-        } else {
-          cumulativeNegativeElevation = 0;
-        }
-
-        // Obj
-        const obj2: GetCumulativeElevationsData = {
-          cumulativeNegativeElevation,
-          cumulativePositiveElevation
-        };
-
-        resolve(obj2);
-      } else {
-        // Obj
-        const obj3: GetCumulativeElevationsData = {
-          cumulativeNegativeElevation: elevationsArr[0],
-          cumulativePositiveElevation: elevationsArr[0]
-        };
-        resolve(obj3);
       }
+
+      const cumulativeElevationsObj = {
+        cumulativeNegativeElevation: cumulativeNegativeElevation,
+        cumulativePositiveElevation: cumulativePositiveElevation
+      };
+
+      debugMode && console.log(`test getCumulativeElevations => `.magenta, cumulativeElevationsObj);
+      resolve(cumulativeElevationsObj);
     } catch (error) {
       console.error(':( getCumulativeElevations error', error);
       reject(error);
@@ -1046,16 +1122,32 @@ const convertPositionsToArr: ConvertPositionsToArr = async ({ positionsArrObj })
 const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // Result array
-      const resArr: GetPositionsArrData[] = (strArr as string[])
-        .map(str => str.split(pattern))
-        .filter(splitStr => !isNaN(parseFloat(splitStr[1])) && !isNaN(parseFloat(splitStr[3])))
-        .map(splitStr => ({
-          lat: parseFloat(splitStr[1]),
-          lon: parseFloat(splitStr[3])
-        }));
+      if (Array.isArray(strArr)) {
+        // Result array
+        const resArr: GetPositionsArrData[] = (strArr)
+          .map(str => str.split(pattern))
+          .filter(splitStr => !isNaN(parseFloat(splitStr[1])) && !isNaN(parseFloat(splitStr[3])))
+          .map(splitStr => ({
+            lat: parseFloat(splitStr[1]),
+            lon: parseFloat(splitStr[3])
+          }));
 
-      resolve(resArr);
+        if (Array.isArray(resArr)) {
+          debugMode && console.log(`test getPositionsArr => `.magenta, resArr);
+          resolve(resArr);
+        } else {
+          // Results obj
+          const resultsObj = {
+            lat: 0,
+            lon: 0,
+          }
+
+          debugMode && console.log(`test getPositionsArr => `.magenta, resultsObj);
+          resolve([resultsObj]);
+        }
+      } else {
+        console.log(`:( strArr is not an array`.red);
+      }
     } catch (error) {
       console.error(':( getPositionsArr error', error);
       reject(error);
@@ -1069,30 +1161,32 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
     try {
       // If no elevations
       if (Array.isArray(strArr) && strArr.length > 0) {
-        // Promise array to store results of each getString call
-        const promises = strArr.map((str: string) => getString({ str, pattern1, pattern2 }));
+        // Result array
+        const resArrPromises = strArr.map(async (str, i) => {
+          // Get each elevation
+          const eleStr = await getString({ str, pattern1, pattern2 });
 
-        // Wait for all promises to resolve
-        const results = await Promise.all(promises);
+          // Record
+          if (!isNaN(parseFloat(eleStr[0]))) {
+            // Elevation
+            return parseFloat(eleStr[0]);
+          }
+        });
 
-        // Extract elevations from results
-        const resArr: any = results
-          .map((eleStr: string[]) => {
-            if (Array.isArray(eleStr) && eleStr.length > 1) {
-              return parseFloat(eleStr[1]); // Parse elevation strings to numbers
-            }
-            return NaN;
-          })
-          .filter((ele: number) => !isNaN(ele)); // Filter out non-numeric elevations
+        // Wait promesses
+        const resolvedArr = await Promise.all(resArrPromises);
 
-        // Resolve with elevation array wrapped in an object
+        // Filter values
+        const resArr = resolvedArr.filter(ele => typeof ele === 'number' && !isNaN(ele)) as number[];
+
+        debugMode && console.log(`test getElevationsArr => `.magenta, { elevationArr: resArr });
         resolve({ elevationArr: resArr });
       } else {
-        // Resolve with an empty elevation array wrapped in an object
+        debugMode && console.log(`test getElevationsArr => `.magenta, { elevationArr: [] });
         resolve({ elevationArr: [] });
       }
     } catch (error) {
-      console.error(':( getElevationsArr error', error);
+      console.error(':( getElevationsArr error => ', error);
       reject(error);
     }
   });
@@ -1102,16 +1196,24 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
 const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // Mapping selected string array to promises
-      const promises = strArr.map(async (str) => {
-        // Get each tag value
-        const tagValue = await getString({ str, pattern1, pattern2 });
-        return tagValue[0];
-      });
+      if (Array.isArray(strArr)) {
+        // Mapping selected string array to promises
+        const promises = strArr.map(async (str) => {
+          // Get each tag value
+          const tagValue = await getString({ str, pattern1, pattern2 });
 
-      // Resolve all promises and return the resulting array
-      const tagsValueArr = await Promise.all(promises);
-      resolve({ tagsValueArr });
+          return tagValue[0] ? tagValue[0] : "";
+        });
+
+        // Resolve all promises and return the resulting array
+        const tagsValueArr = await Promise.all(promises);
+
+        debugMode && console.log(`test getTagsValueArr => `.magenta, { tagsValueArr: tagsValueArr });
+        resolve({ tagsValueArr: tagsValueArr });
+      } else {
+        debugMode && console.log(`test getTagsValueArr => `.magenta, { tagsValueArr: [] });
+        resolve({ tagsValueArr: [] });
+      }
     } catch (error) {
       console.error(':( getTagsValueArr error', error);
       reject(error);
@@ -1141,7 +1243,7 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        // console.log("test getBounds => ".magenta, boundsDataObj);
+        debugMode && console.log(`test getBounds => `.magenta, boundsDataObj);
         resolve(boundsDataObj);
       } else {
         // Obj
@@ -1154,7 +1256,7 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        // console.log("test getBounds => ".magenta, boundsDataObj);
+        debugMode && console.log(`test getBounds => `.magenta, boundsDataObj);
         resolve(boundsDataObj);
       }
     } catch (error) {
@@ -1195,7 +1297,7 @@ const getLink: GetLink = async (str) => {
           type: type
         };
 
-        // console.log("test getLink => ".magenta, linkDataObj);
+        debugMode && console.log(`test getLink => `.magenta, linkDataObj);
         resolve(linkDataObj);
       } else {
         // Return an empty object
@@ -1205,7 +1307,7 @@ const getLink: GetLink = async (str) => {
           type: null
         };
 
-        // console.log("test getLink => ".magenta, linkDataObj);
+        debugMode && console.log(`test getLink => `.magenta, linkDataObj);
         resolve(linkDataObj);
       }
     } catch (error) {
@@ -1262,11 +1364,11 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
         for (const element of arr) {
           let data: string | null = metaData.result[0].substring(metaData.result[0].lastIndexOf(`<${element}>`) + `<${element}>`.length, metaData.result[0].lastIndexOf(`</${element}>`));
 
-          if (data !== null && data.substring(0, 5) === "<meta") {
+          if (data && data.substring(0, 5) === "<meta") {
             data = null;
           }
 
-          if (data !== null) {
+          if (data) {
             resArr.push(data);
           }
         }
@@ -1279,14 +1381,14 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
             metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
             metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
 
-            // console.log("test getMetaData => ".magenta, metadataObj);
+            debugMode && console.log(`test getMetaData => `.magenta, metadataObj);
             resolve(metadataObj);
           }
         });
       } else {
         console.log(":( Gpx file is wrong. Check metadata tag in your gpx file.".red);
 
-        // console.log("test getMetaData => ".magenta, metadataObj);
+        debugMode && console.log(`test getMetaData => `.magenta, metadataObj);
         resolve(metadataObj);
       }
     } catch (error) {
