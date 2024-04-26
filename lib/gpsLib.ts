@@ -12,7 +12,7 @@ import { promisify } from 'util';
 const readFileAsync = promisify(fs.readFile);
 
 // Debug mode
-const debugMode = false;
+const debugMode = true;
 
 // Types
 import {
@@ -100,7 +100,7 @@ const readGpxFile: ReadGpxFile = async (gpxFilePath) => {
         })
         .catch((error) => {
           // Log error message if file does not exist or cannot be accessed
-          console.log(`:( ${absolutePath} is wrong path. Check pathname or filename`.red);
+          console.log(`:( ${absolutePath} is wrong path. Check pathname or filename : ${error}`.red);
           // Resolve with false to indicate failure
           resolve(false);
         });
@@ -155,10 +155,12 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
         i++;
 
         if (i === patternCount) {
-          resolve({ length: resultArray.length, result: resultArray.filter(Boolean) });
+          const resArr = { length: resultArray.length, result: resultArray.filter(Boolean) };
+
+          debugMode && console.log(`test getStringBetweenIncludedPatterns => `.magenta, JSON.stringify(resArr));
+          resolve(resArr);
         }
       }
-
     } catch (error) {
       console.error("getStringBetweenIncludedPatterns error", error);
       reject(error);
@@ -170,6 +172,42 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
 const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Result object
+      const mergeStagesTrackData: MergeStagesTrackData = {
+        namesArrObj: [],
+        typeArrObj: [],
+        cmtArrObj: [],
+        descArrObj: [],
+        srcArrObj: [],
+        urlArrObj: [],
+        urlnameArrObj: [],
+        linkArrObj: [],
+        numberArrObj: [],
+        extensionsArrObj: [],
+        distances: {
+          full: {
+            meters: null,
+            yards: null
+          },
+          distancesArrObj: []
+        },
+        positions: {
+          full: [],
+          positionsArrObj: []
+        },
+        elevations: {
+          full: [],
+          min: null,
+          max: null,
+          minMaxArrObj: []
+        },
+        cumulativeElevations: {
+          cumulativePositiveElevation: null,
+          cumulativeNegativeElevation: null,
+          cumulativeElevationArrObj: []
+        }
+      }
+
       // Settings
       let positionsFullArr: any[] = [];
       let elevationsFullArr: any[] = [];
@@ -177,43 +215,6 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
 
       // Listing each stage
       stagesTrackArr.forEach(async (stage, i) => {
-        // Result object
-        const mergeStagesTrackData: MergeStagesTrackData = {
-          namesArrObj: [],
-          typeArrObj: [],
-          cmtArrObj: [],
-          descArrObj: [],
-          srcArrObj: [],
-          urlArrObj: [],
-          urlnameArrObj: [],
-          linkArrObj: [],
-          numberArrObj: [],
-          extensionsArrObj: [],
-          distances: {
-            full: {
-              meters: null,
-              yards: null
-            },
-            distancesArrObj: []
-          },
-          positions: {
-            full: [],
-            positionsArrObj: []
-          },
-          elevations: {
-            full: [],
-            min: null,
-            max: null,
-            minMaxArrObj: []
-          },
-          cumulativeElevations: {
-            cumulativePositiveElevation: null,
-            cumulativeNegativeElevation: null,
-            cumulativeElevationArrObj: []
-          }
-        }
-
-
         // ID
         const id = i.toString();
 
@@ -299,14 +300,11 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
         };
 
         // Cumulative elevations
-        const cumulativeElevationsObj = {
-          id: id,
-          cumulativePositiveElevations: null,
-          cumulativeNegativeElevations: null
+        let cumulativeElevationsObj = {
+          id: stage.id,
+          cumulativePositiveElevation: stage.elevations.cumulativePositiveElevation,
+          cumulativeNegativeElevation: stage.elevations.cumulativeNegativeElevation
         };
-
-        // FIXME manque le cumulativeElevationsObj dans le stage reçu 
-        console.log("stage", stage)
 
         // Positions full
         positionsFullArr.push(stage.positions.positionsArrObj);
@@ -331,7 +329,6 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
         mergeStagesTrackData.positions.positionsArrObj.push(positionsObj); // array of positions objects
         mergeStagesTrackData.distances.distancesArrObj.push(distancesObj); // array of distances objects
         mergeStagesTrackData.elevations.minMaxArrObj.push(eleObj); // array of elevations objects
-        console.log(cumulativeElevationsObj)
         mergeStagesTrackData.cumulativeElevations.cumulativeElevationArrObj.push(cumulativeElevationsObj); // array of cumulative elevations objects
 
         // End loop
@@ -366,6 +363,7 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
           let cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
           mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation = cumulativeNegativeElevation;
 
+          debugMode && console.log(`test mergeStagesTrackData => `.magenta, JSON.stringify(mergeStagesTrackData));
           resolve(mergeStagesTrackData);
         }
       });
@@ -436,6 +434,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
           type: type
         };
 
+        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkTrk));
         resolve(linkTrk);
       } else {
         const linkTrk: GetLinkTrkData = {
@@ -470,6 +469,7 @@ const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
           return { extension };
         });
 
+        debugMode && console.log(`test getExtensions => `.magenta, JSON.stringify(result));
         resolve(result);
       } else {
         // No matches found
@@ -687,10 +687,11 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getTracks => `.magenta, resArr);
+        debugMode && console.log(`test getTracks => `.magenta, JSON.stringify(resArr));
         resolve(resArr);
       } else {
         console.log(":| No tracks in the gpx file.");
+        debugMode && console.log(`test getTracks => `.magenta, JSON.stringify([]));
         resolve([]);
       }
     } catch (error) {
@@ -896,11 +897,11 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getRoutes => `.magenta, resArr);
+        debugMode && console.log(`test getRoutes => `.magenta, JSON.stringify(resArr));
         resolve(resArr);
       } else {
         console.log(":| No routes in the gpx file.");
-        debugMode && console.log(`test getRoutes => `.magenta, []);
+        debugMode && console.log(`test getRoutes => `.magenta, JSON.stringify([]));
         resolve([]);
       }
     } catch (error) {
@@ -998,13 +999,13 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getWayPoints => `.magenta, resArr);
+        debugMode && console.log(`test getWayPoints => `.magenta, JSON.stringify(resArr));
         resolve(resArr);
       } else {
         // Console message
         console.log(":| No way points in the gpx file.".yellow);
 
-        debugMode && console.log(`test getWayPoints => `.magenta, []);
+        debugMode && console.log(`test getWayPoints => `.magenta, JSON.stringify([]));
         resolve([]);
       }
     } catch (error) {
@@ -1042,6 +1043,7 @@ const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
         mergedData,
       };
 
+      debugMode && console.log(`test dataExtraction => `.magenta, JSON.stringify(obj));
       resolve(obj);
     } catch (error) {
       console.log(':( dataExtraction error'.red);
@@ -1089,7 +1091,7 @@ const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr 
         cumulativePositiveElevation: cumulativePositiveElevation
       };
 
-      debugMode && console.log(`test getCumulativeElevations => `.magenta, cumulativeElevationsObj);
+      debugMode && console.log(`test getCumulativeElevations => `.magenta, JSON.stringify(cumulativeElevationsObj));
       resolve(cumulativeElevationsObj);
     } catch (error) {
       console.error(':( getCumulativeElevations error', error);
@@ -1133,7 +1135,7 @@ const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
           }));
 
         if (Array.isArray(resArr)) {
-          debugMode && console.log(`test getPositionsArr => `.magenta, resArr);
+          debugMode && console.log(`test getPositionsArr => `.magenta, JSON.stringify(resArr));
           resolve(resArr);
         } else {
           // Results obj
@@ -1142,7 +1144,7 @@ const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
             lon: 0,
           }
 
-          debugMode && console.log(`test getPositionsArr => `.magenta, resultsObj);
+          debugMode && console.log(`test getPositionsArr => `.magenta, JSON.stringify(resultsObj));
           resolve([resultsObj]);
         }
       } else {
@@ -1179,10 +1181,10 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
         // Filter values
         const resArr = resolvedArr.filter(ele => typeof ele === 'number' && !isNaN(ele)) as number[];
 
-        debugMode && console.log(`test getElevationsArr => `.magenta, { elevationArr: resArr });
+        debugMode && console.log(`test getElevationsArr => `.magenta, JSON.stringify({ elevationArr: resArr }));
         resolve({ elevationArr: resArr });
       } else {
-        debugMode && console.log(`test getElevationsArr => `.magenta, { elevationArr: [] });
+        debugMode && console.log(`test getElevationsArr => `.magenta, JSON.stringify({ elevationArr: [] }));
         resolve({ elevationArr: [] });
       }
     } catch (error) {
@@ -1208,10 +1210,10 @@ const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) 
         // Resolve all promises and return the resulting array
         const tagsValueArr = await Promise.all(promises);
 
-        debugMode && console.log(`test getTagsValueArr => `.magenta, { tagsValueArr: tagsValueArr });
+        debugMode && console.log(`test getTagsValueArr => `.magenta, JSON.stringify({ tagsValueArr: tagsValueArr }));
         resolve({ tagsValueArr: tagsValueArr });
       } else {
-        debugMode && console.log(`test getTagsValueArr => `.magenta, { tagsValueArr: [] });
+        debugMode && console.log(`test getTagsValueArr => `.magenta, JSON.stringify({ tagsValueArr: [] }));
         resolve({ tagsValueArr: [] });
       }
     } catch (error) {
@@ -1243,7 +1245,7 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        debugMode && console.log(`test getBounds => `.magenta, boundsDataObj);
+        debugMode && console.log(`test getBounds => `.magenta, JSON.stringify(boundsDataObj));
         resolve(boundsDataObj);
       } else {
         // Obj
@@ -1256,7 +1258,7 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        debugMode && console.log(`test getBounds => `.magenta, boundsDataObj);
+        debugMode && console.log(`test getBounds => `.magenta, JSON.stringify(boundsDataObj));
         resolve(boundsDataObj);
       }
     } catch (error) {
@@ -1297,7 +1299,7 @@ const getLink: GetLink = async (str) => {
           type: type
         };
 
-        debugMode && console.log(`test getLink => `.magenta, linkDataObj);
+        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkDataObj));
         resolve(linkDataObj);
       } else {
         // Return an empty object
@@ -1307,7 +1309,7 @@ const getLink: GetLink = async (str) => {
           type: null
         };
 
-        debugMode && console.log(`test getLink => `.magenta, linkDataObj);
+        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkDataObj));
         resolve(linkDataObj);
       }
     } catch (error) {
@@ -1381,14 +1383,14 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
             metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
             metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
 
-            debugMode && console.log(`test getMetaData => `.magenta, metadataObj);
+            debugMode && console.log(`test getMetaData => `.magenta, JSON.stringify(metadataObj));
             resolve(metadataObj);
           }
         });
       } else {
         console.log(":( Gpx file is wrong. Check metadata tag in your gpx file.".red);
 
-        debugMode && console.log(`test getMetaData => `.magenta, metadataObj);
+        debugMode && console.log(`test getMetaData => `.magenta, JSON.stringify(metadataObj));
         resolve(metadataObj);
       }
     } catch (error) {
@@ -1403,7 +1405,7 @@ const calculateDistanceBetweenPositions: CalculateDistanceBetweenPositions = asy
   return new Promise(async (resolve, reject) => {
     try {
       // Earth radius in meters
-      let radius = 6378137.0;
+      const radius = 6378137.0;
 
       // Degree to radian conversion
       let DE2RA = 0.01745329252;
@@ -1423,10 +1425,10 @@ const calculateDistanceBetweenPositions: CalculateDistanceBetweenPositions = asy
         lon2 *= DE2RA;
 
         // Calculate distance
-        let d = Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2);
+        const d = Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2);
 
         // Distance in meters
-        let distance = radius * Math.acos(d);
+        const distance = radius * Math.acos(d);
 
         resolve(distance);
       }

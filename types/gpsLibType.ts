@@ -40,11 +40,10 @@ interface StageData {
   };
   elevations: {
     full: number[];
-  };
-  cumulativeElevations: {
+    min: number | null;
+    max: number | null;
     cumulativePositiveElevation: number | null;
     cumulativeNegativeElevation: number | null;
-    cumulativeElevationArrObj: { id: string }[];
   };
 }
 
@@ -79,7 +78,7 @@ interface MergeStagesTrackData {
   cumulativeElevations: {
     cumulativePositiveElevation: number | null;
     cumulativeNegativeElevation: number | null;
-    cumulativeElevationArrObj: { id: string }[];
+    cumulativeElevationArrObj: { id: string; cumulativePositiveElevation: number | null; cumulativeNegativeElevation: number | null }[];
   };
 }
 

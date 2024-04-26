@@ -14,7 +14,7 @@ const extractGpxData = async (gpxFilePath: string, debugMode: boolean): Promise<
         // Read the Gpx file
         const gpxContent: string | false = await readGpxFile(gpxFilePath);
 
-          // Check existing file
+        // Check existing file
         if (typeof gpxContent === "boolean" && gpxContent === false) {
             console.log(`:( Unable to read file "${gpxFilePath}"`);
             return false;
@@ -35,7 +35,7 @@ const extractGpxData = async (gpxFilePath: string, debugMode: boolean): Promise<
         // Data extraction
         const dataObj = await dataExtraction(dataExtractionProps);
 
-        console.log('dataObj', JSON.stringify(dataObj.mergedData));
+        // console.log('dataObj', JSON.stringify(dataObj));
 
         return dataObj;
     } catch (error) {
