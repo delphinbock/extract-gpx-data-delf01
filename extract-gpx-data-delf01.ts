@@ -8,36 +8,36 @@ const extractGpxData = async (gpxFilePath: string, debugMode: boolean): Promise<
     try {
         if (typeof gpxFilePath !== "string") {
             console.log(`:( GPX file ${gpxFilePath} is wrong`);
-            return false;
+            return;
+        } else {
+            // Read the Gpx file
+            const gpxContent = await readGpxFile({ gpxFilePath: gpxFilePath, debugMode: debugMode });
+
+            // Check existing file
+            if (!gpxContent) {
+                console.log(`:( Unable to read file "${gpxFilePath}"`);
+                return;
+            }
+
+            // Extract
+            const { gpxFileStr } = gpxContent;
+
+            if (typeof gpxFileStr !== "string") {
+                // Handle unexpected types here, if necessary
+                console.log(`:( Unexpected GPX file contents`);
+                return;
+            }
+
+            // Prepare DataExtractionProps object
+            const dataExtractionProps: DataExtractionProps = { readGpxFile: gpxFileStr, debugMode: debugMode };
+
+            // Data extraction
+            const dataExtractionObj = await dataExtraction(dataExtractionProps);
+
+            // console.log('dataObj', JSON.stringify(dataObj));
+
+            return dataExtractionObj;
         }
-
-        // Read the Gpx file
-        const gpxContent: string | false = await readGpxFile(gpxFilePath);
-
-        // Check existing file
-        if (typeof gpxContent === "boolean" && gpxContent === false) {
-            console.log(`:( Unable to read file "${gpxFilePath}"`);
-            return false;
-        }
-
-        if (typeof gpxContent !== "string") {
-            // Handle unexpected types here, if necessary
-            console.log(`:( Unexpected GPX file contents`);
-            return false;
-        }
-
-
-        // Prepare DataExtractionProps object
-        const dataExtractionProps: DataExtractionProps = {
-            readGpxFile: gpxContent,
-        };
-
-        // Data extraction
-        const dataObj = await dataExtraction(dataExtractionProps);
-
-        // console.log('dataObj', JSON.stringify(dataObj));
-
-        return dataObj;
     } catch (error) {
         console.log(`:( An error occurred while extracting GPX data: ${error}`);
         console.error(error);

@@ -11,12 +11,10 @@ import * as path from 'path';
 import { promisify } from 'util';
 const readFileAsync = promisify(fs.readFile);
 
-// Debug mode
-const debugMode = true;
-
 // Types
 import {
   RootAppPath,
+  MessageConcat,
   ReadGpxFile,
   GetStringBetweenIncludedPatterns,
   GetStringBetweenIncludedPatternsData,
@@ -54,14 +52,39 @@ import {
   GetMetaDataData,
   CalculateDistanceBetweenPositions,
   TrackDistanceCalculation,
-  StageData,
+  // StageData,
 } from '../types/gpsLibType';
+
+// Concatenation of several messages
+const messageConcat: MessageConcat = async ({ methodName, messagesArrObj }) => {
+  // Default
+  const maxCharacters = 1000;
+  const firstMessage = `Debug mode`;
+  let lastMessage = `... max ${maxCharacters} characters`;
+
+  // Messages conctenation
+  const concatenatedMessage = Array.isArray(messagesArrObj) && messagesArrObj.length > 0 ? messagesArrObj.map(({ message, color }) => `${message[color]}`).join('').substring(0, maxCharacters) : [];
+
+  // Colorized
+  const colorizedMethodName = methodName ? `, ${methodName} => `.magenta : "";
+
+  // Last message
+  lastMessage = concatenatedMessage.length >= maxCharacters ? lastMessage : "";
+
+  // Final message
+  const finalMessage = { message: `${firstMessage.magenta}${colorizedMethodName} ${concatenatedMessage} ${lastMessage.magenta}` };
+
+  // Display console colorized messages
+  console.log(finalMessage.message);
+
+  return finalMessage;
+};
 
 // Root app directory
 const rootAppPath: RootAppPath = async () => {
   return new Promise(async (resolve, reject) => {
     try {
-      let rootAppDirectory: unknown;
+      let rootAppDirectory: string;
 
       if (require.main) {
         rootAppDirectory = path.dirname(require.main.filename);
@@ -77,8 +100,8 @@ const rootAppPath: RootAppPath = async () => {
 };
 
 // Read gpx file
-const readGpxFile: ReadGpxFile = async (gpxFilePath) => {
-  return new Promise<string | false>((resolve, reject) => {
+const readGpxFile: ReadGpxFile = async ({ gpxFilePath, debugMode }) => {
+  return new Promise((resolve, reject) => {
     try {
       // Determine the root directory of the application
       const rootAppDirectory = require.main ? path.dirname(require.main.filename) : __dirname;
@@ -94,72 +117,78 @@ const readGpxFile: ReadGpxFile = async (gpxFilePath) => {
           // Read the file
           return fs.promises.readFile(absolutePath, "utf8");
         })
-        .then((gpxFileStr) => {
+        .then(async (gpxFileStr) => {
           // Resolve with the contents of the file
-          resolve(gpxFileStr);
+          debugMode && await messageConcat({ methodName: `readGpxFile`, messagesArrObj: [{ message: `${JSON.stringify(gpxFileStr)}`, color: "black" }] });
+          resolve({ gpxFileStr: gpxFileStr });
         })
         .catch((error) => {
           // Log error message if file does not exist or cannot be accessed
-          console.log(`:( ${absolutePath} is wrong path. Check pathname or filename : ${error}`.red);
+          console.error(`:( ${absolutePath} is wrong path. Check pathname or filename : ${error}`);
           // Resolve with false to indicate failure
-          resolve(false);
+          resolve({ gpxFileStr: null });
         });
     } catch (error) {
       // Catch any synchronous errors and reject the promise
-      console.error(':( readGpxFile error'.red);
+      console.error(`:( readGpxFile error => ${error}`);
       reject(error);
     }
   });
 }
 
 // Get string between two included string of characters
-const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async ({ str, pattern1, pattern2 }) => {
-  return new Promise((resolve, reject) => {
+const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async ({ str, pattern1, pattern2, debugMode }) => {
+  return new Promise(async (resolve, reject) => {
     try {
       // Regex
-      let regex = new RegExp(pattern1, "g");
+      const regex = new RegExp(pattern1, "g");
 
       // Count patterns
       const matchResult = str.match(regex);
       const patternCount = matchResult ? matchResult.length : 0;
 
-      // While loop settings
-      let i = 0;
-      let resultArray = [];
+      if (patternCount > 0) {
+        // While loop settings
+        let i = 0;
+        let resultArray = [];
 
-      while (i < patternCount) {
-        // Number of total characters
-        const totalStr = str.length;
+        while (i < patternCount) {
+          // Number of total characters
+          const totalStr = str.length;
 
-        // Slice str to each pattern segment
-        const pattern1String = (pattern1 instanceof RegExp) ? pattern1.source : pattern1;
-        const patternPosition = str.indexOf(pattern1String);
-        const pattern2String = (pattern2 instanceof RegExp) ? pattern2.source : pattern2;
-        const patternLastPosition = str.indexOf(pattern2String) + pattern2String.length;
-        const patternStr = str.substring(patternPosition, patternLastPosition);
+          // Slice str to each pattern segment
+          const pattern1String = (pattern1 instanceof RegExp) ? pattern1.source : pattern1;
+          const patternPosition = str.indexOf(pattern1String);
+          const pattern2String = (pattern2 instanceof RegExp) ? pattern2.source : pattern2;
+          const patternLastPosition = str.indexOf(pattern2String) + pattern2String.length;
+          const patternStr = str.substring(patternPosition, patternLastPosition);
 
-        // Check if patternsegment is existing
-        if (patternPosition > 0) {
-          // Redefine the native string
-          str = str.substring(patternLastPosition, totalStr);
+          // Check if patternsegment is existing
+          if (patternPosition > 0) {
+            // Redefine the native string
+            str = str.substring(patternLastPosition, totalStr);
 
-          // Minify file
-          let minifiedStr = patternStr.replace(/\s\s+/g, '') // Remove spaces, tabs, empty lines
-          minifiedStr = minifiedStr.replace(/(\r\n|\n|\r)/gm, ""); // Remove linebreaks
+            // Minify file
+            let minifiedStr = patternStr.replace(/\s\s+/g, '') // Remove spaces, tabs, empty lines
+            minifiedStr = minifiedStr.replace(/(\r\n|\n|\r)/gm, ""); // Remove linebreaks
 
-          // Record
-          resultArray.push(minifiedStr);
+            // Record
+            resultArray.push(minifiedStr);
+          }
+
+          // Incrementation
+          i++;
+
+          if (i === patternCount) {
+            const resArr = { length: resultArray.length, result: resultArray.filter(Boolean) };
+            debugMode && await messageConcat({ methodName: `getStringBetweenIncludedPatterns`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
+            resolve(resArr);
+          }
         }
-
-        // Incrementation
-        i++;
-
-        if (i === patternCount) {
-          const resArr = { length: resultArray.length, result: resultArray.filter(Boolean) };
-
-          debugMode && console.log(`test getStringBetweenIncludedPatterns => `.magenta, JSON.stringify(resArr));
-          resolve(resArr);
-        }
+      } else {
+        const resArr = { length: 0, result: [] };
+        debugMode && await messageConcat({ methodName: `getStringBetweenIncludedPatterns`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
+        resolve(resArr)
       }
     } catch (error) {
       console.error("getStringBetweenIncludedPatterns error", error);
@@ -169,7 +198,7 @@ const getStringBetweenIncludedPatterns: GetStringBetweenIncludedPatterns = async
 }
 
 // Merge all stages track
-const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
+const mergeStagesTrackData: MergeStagesTrack = async ({ stagesTrackArr, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Result object
@@ -214,79 +243,76 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
       let distancesFullArr: number[] = [];
 
       // Listing each stage
-      stagesTrackArr.forEach(async (stage, i) => {
-        // ID
-        const id = i.toString();
-
+      const processedStagesTrackArr = stagesTrackArr.map(async (stage, i) => {
         // Merge names
         let nameObj = {
-          id: id,
+          id: i,
           name: stage.name
         };
 
         // Merge types
         let typeObj = {
-          id: id,
+          id: i,
           type: stage.type
         };
 
         // Merge comments
         let cmtObj = {
-          id: id,
+          id: i,
           type: stage.cmt
         };
 
         // Merge descriptions
         let descObj = {
-          id: id,
+          id: i,
           type: stage.desc
         };
 
         // Merge sources
         let srcObj = {
-          id: id,
+          id: i,
           type: stage.src
         };
 
         // Merge url
         let urlObj = {
-          id: id,
+          id: i,
           type: stage.url
         };
 
         // Merge urlname
         let urlnameObj = {
-          id: id,
+          id: i,
           type: stage.urlname
         };
 
         // Merge link
         let linkObj = {
-          id: id,
+          id: i,
           type: stage.link
         };
 
         // Merge number
         let numberObj = {
-          id: id,
+          id: i,
           type: stage.number
         };
 
         // Merge extensions
         let extensionsObj = {
-          id: id,
+          id: i,
           type: stage.extensions
         };
 
         // Positions array of objects
         let positionsObj = {
-          id: id,
+          id: i,
           positions: stage.positions.positionsArrObj
         };
 
         // Distance array of objects
         let distancesObj = {
-          id: id,
+          id: i,
           distance: {
             meters: stage.distance.meters,
             yards: stage.distance.yards
@@ -295,7 +321,7 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
 
         // Elevations array
         let eleObj = {
-          id: id,
+          id: i,
           elevations: stage.elevations.full
         };
 
@@ -335,38 +361,44 @@ const mergeStagesTrackData: MergeStagesTrack = async (stagesTrackArr) => {
         if (stagesTrackArr.length === i + 1) {
           // Positions
           positionsFullArr = positionsFullArr.flat();
-          mergeStagesTrackData.positions.full = positionsFullArr;
+          mergeStagesTrackData.positions = {
+            ...mergeStagesTrackData.positions,
+            full: positionsFullArr.flat()
+          };
 
           // Elevations
           elevationsFullArr = elevationsFullArr.flat();
-          mergeStagesTrackData.elevations.full = elevationsFullArr;
+          mergeStagesTrackData.elevations = {
+            ...mergeStagesTrackData.elevations,
+            full: elevationsFullArr.flat(),
+            min: Math.min(...elevationsFullArr.flat()),
+            max: Math.max(...elevationsFullArr.flat())
+          };
 
           // Distances
-          const distancesFullArrCalc = distancesFullArr.reduce((a, b) => a + b, 0);
-          mergeStagesTrackData.distances.full.meters = distancesFullArrCalc;
-          mergeStagesTrackData.distances.full.yards = parseInt((distancesFullArrCalc * 1.093613).toString());
-
-          // Min elevation
-          mergeStagesTrackData.elevations.min = Math.min(...elevationsFullArr);
-
-          // Max elevation
-          mergeStagesTrackData.elevations.max = Math.max(...elevationsFullArr);
+          mergeStagesTrackData.distances = {
+            ...mergeStagesTrackData.distances,
+            full: {
+              meters: distancesFullArr.reduce((a, b) => a + b, 0),
+              yards: parseInt((distancesFullArr.reduce((a, b) => a + b, 0) * 1.093613).toString())
+            }
+          };
 
           // Cumulative elevations
-          let cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevationsFullArr });
+          const cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevationsFullArr.flat(), debugMode });
+          mergeStagesTrackData.cumulativeElevations = {
+            ...mergeStagesTrackData.cumulativeElevations,
+            cumulativePositiveElevation: cumulativeElevations.cumulativePositiveElevation,
+            cumulativeNegativeElevation: cumulativeElevations.cumulativeNegativeElevation
+          };
 
-          // Cumulative positive elevation
-          let cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
-          mergeStagesTrackData.cumulativeElevations.cumulativePositiveElevation = cumulativePositiveElevation;
-
-          // Cumulative negative elevation
-          let cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
-          mergeStagesTrackData.cumulativeElevations.cumulativeNegativeElevation = cumulativeNegativeElevation;
-
-          debugMode && console.log(`test mergeStagesTrackData => `.magenta, JSON.stringify(mergeStagesTrackData));
+          debugMode && await messageConcat({ methodName: `mergeStagesTrackData`, messagesArrObj: [{ message: `${JSON.stringify(mergeStagesTrackData)}`, color: "black" }] });
           resolve(mergeStagesTrackData);
         }
       });
+
+      console.log("processedStagesTrackArr", processedStagesTrackArr)
+
     } catch (error) {
       console.error(':( mergeStagesTrackData error'.red);
       reject(error);
@@ -404,7 +436,7 @@ const getString: GetString = async ({ str, pattern1, pattern2 }) => {
 };
 
 // Get link tag
-const getLinkTrk: GetLinkTrk = async (str) => {
+const getLinkTrk: GetLinkTrk = async ({ str, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Regex patterns
@@ -434,7 +466,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
           type: type
         };
 
-        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkTrk));
+        debugMode && await messageConcat({ methodName: `getLink`, messagesArrObj: [{ message: `${JSON.stringify(linkTrk)}`, color: "black" }] });
         resolve(linkTrk);
       } else {
         const linkTrk: GetLinkTrkData = {
@@ -443,6 +475,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
           type: null
         };
 
+        debugMode && await messageConcat({ methodName: `getLink`, messagesArrObj: [{ message: `${JSON.stringify(linkTrk)}`, color: "black" }] });
         resolve(linkTrk);
       }
     } catch (error) {
@@ -453,7 +486,7 @@ const getLinkTrk: GetLinkTrk = async (str) => {
 };
 
 // Get extensions tag
-const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
+const getExtensions: GetExtensions = async ({ str, pattern1, pattern2, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Convert pattern1 and pattern2 to strings if they are regular expressions
@@ -469,10 +502,10 @@ const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
           return { extension };
         });
 
-        debugMode && console.log(`test getExtensions => `.magenta, JSON.stringify(result));
+        debugMode && await messageConcat({ methodName: `getExtensions`, messagesArrObj: [{ message: `${JSON.stringify(result)}`, color: "black" }] });
         resolve(result);
       } else {
-        // No matches found
+        debugMode && await messageConcat({ methodName: `getExtensions`, messagesArrObj: [{ message: `${JSON.stringify([{ extension: null }])}`, color: "black" }] });
         resolve([{ extension: null }]);
       }
     } catch (error) {
@@ -483,15 +516,11 @@ const getExtensions: GetExtensions = async ({ str, pattern1, pattern2 }) => {
 };
 
 // Tracks
-const getTracks: GetTracks = async ({ readGpxFile }) => {
+const getTracks: GetTracks = async ({ readGpxFile, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Get track tag
-      const stagesTrackArray: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({
-        str: readGpxFile.toString(),
-        pattern1: "<trk>",
-        pattern2: "</trk>"
-      });
+      const stagesTrackArray: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({ str: readGpxFile.toString(), pattern1: "<trk>", pattern2: "</trk>", debugMode: debugMode });
 
       if (stagesTrackArray.result) {
         // Default
@@ -607,11 +636,11 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             trackData.id = k.toString();
 
             // Positions array of objects
-            const positionsArrObj = await getPositionsArr({ strArr: trkptStr.resArr, pattern: "\"" });
+            const positionsArrObj = await getPositionsArr({ strArr: trkptStr.resArr, pattern: "\"", debugMode: debugMode });
             trackData.positions.positionsArrObj = positionsArrObj;
 
             // Positions array of arrays
-            const positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj });
+            const positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj, debugMode: debugMode });
             if (Array.isArray(positionsArrArr)) {
               trackData.positions.positionsArrArr = positionsArrArr;
             }
@@ -631,7 +660,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             }
 
             // Elevations
-            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr.resArr, pattern1: "<ele>", pattern2: "</ele>" });
+            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr.resArr, pattern1: "<ele>", pattern2: "</ele>", debugMode: debugMode });
             const elevationsArr = elevationsResult.elevationArr;
 
             // Full elevations
@@ -646,7 +675,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             trackData.elevations.max = maxEle;
 
             // Cumulative elevations
-            const cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr });
+            const cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr, debugMode: debugMode });
             trackData.elevations.cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
             trackData.elevations.cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
 
@@ -655,7 +684,7 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
 
             recordsTrkptArr.map(async (element) => {
               const arr = [trksegStr[1]];
-              const elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              const elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
               const propertyName = `${element}s`;
               trackData[propertyName] = { full: elementArr };
             });
@@ -666,20 +695,20 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
             // Records trk "name", "type", "cmt", "desc", "src", "url", "urlname", "number" tags
             const recordsTrkArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
 
-            recordsTrkArr.map(async (element) => {
+            for (const element of recordsTrkArr) {
               // Record trk elements
-              const elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              const elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
               trackData[element] = elementArr[0];
-            });
+            }
 
             // Link
             // <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link>
-            const linkObj = await getLinkTrk(stage);
+            const linkObj = await getLinkTrk({ str: stage, debugMode: debugMode });
             trackData.link = linkObj;
 
             // Route extensions
             // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
-            const extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>" });
+            const extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>", debugMode: debugMode });
             trackData.extensions = extensions[0];
 
             // Add the processed track data to the result array
@@ -687,11 +716,11 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getTracks => `.magenta, JSON.stringify(resArr));
+        debugMode && await messageConcat({ methodName: `getTracks`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
         resolve(resArr);
       } else {
         console.log(":| No tracks in the gpx file.");
-        debugMode && console.log(`test getTracks => `.magenta, JSON.stringify([]));
+        debugMode && await messageConcat({ methodName: `getTracks`, messagesArrObj: [] });
         resolve([]);
       }
     } catch (error) {
@@ -702,16 +731,12 @@ const getTracks: GetTracks = async ({ readGpxFile }) => {
 };
 
 // Routes
-const getRoutes: GetRoutes = async ({ readGpxFile }) => {
+const getRoutes: GetRoutes = async ({ readGpxFile, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Get route tag
-      const routesArr = await getStringBetweenIncludedPatterns({
-        str: readGpxFile,
-        pattern1: "<rte>",
-        pattern2: "</rte>"
-      });
-
+      const routesArr = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<rte>", pattern2: "</rte>", debugMode: debugMode });
+      //console.log(routesArr)
       if (routesArr.result) {
         const resArr: GetRoutesData[] = [];
 
@@ -820,11 +845,11 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
 
           if (rteptStrArr.resArr.length > 0) {
             // Positions array of objects
-            const positionsArrObj = await getPositionsArr({ strArr: rteptStrArr.resArr, pattern: "\"" });
+            const positionsArrObj = await getPositionsArr({ strArr: rteptStrArr.resArr, pattern: "\"", debugMode: debugMode });
             routeData.positions.positionsArrObj = positionsArrObj;
 
             // Positions array of arrays
-            const positionsArrArr = (await convertPositionsToArr({ positionsArrObj })).positions;
+            const positionsArrArr = (await convertPositionsToArr({ positionsArrObj: positionsArrObj, debugMode: debugMode })).positions;
             routeData.positions.positionsArrArr = positionsArrArr;
 
             // Distance calculation
@@ -833,11 +858,7 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             routeData.distance.yards = typeof distance === 'number' ? distance * 1.093613 : null;
 
             // Elevations
-            const elevationsArrData = await getElevationsArr({
-              strArr: rteptStrArr.resArr,
-              pattern1: "<ele>",
-              pattern2: "</ele>"
-            });
+            const elevationsArrData = await getElevationsArr({ strArr: rteptStrArr.resArr, pattern1: "<ele>", pattern2: "</ele>", debugMode: debugMode });
 
             const elevationsArr = elevationsArrData.elevationArr;
             routeData.elevations.full = elevationsArr;
@@ -847,7 +868,7 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             routeData.elevations.max = Math.max(...elevationsArr);
 
             // Cumulative elevations
-            const cumulativeElevations = await getCumulativeElevations({ elevationsArr });
+            const cumulativeElevations = await getCumulativeElevations({ elevationsArr: elevationsArr, debugMode: debugMode });
             routeData.elevations.cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
             routeData.elevations.cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
 
@@ -856,7 +877,7 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
 
             await Promise.all(recordsRteptArr.map(async (element) => {
               if (rteptStrArr.resArr.length > 1) {
-                const elementArr = await getTagsValueArr({ strArr: [rteptStrArr.resArr[0]], pattern1: `<${element}>`, pattern2: `</${element}>` });
+                const elementArr = await getTagsValueArr({ strArr: [rteptStrArr.resArr[0]], pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
                 routeData[`${element}s`] = { full: elementArr.tagsValueArr };
               } else {
                 console.log(`rteptStrArr.resArr does not contain enough elements for ${element}`);
@@ -867,24 +888,16 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
             const recordsRteArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
 
             await Promise.all(recordsRteArr.map(async (element) => {
-              const elementArr = await getString({
-                str: route,
-                pattern1: `<${element}>`,
-                pattern2: `</${element}>`
-              });
+              const elementArr = await getString({ str: route, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
               routeData[element] = elementArr[0];
             }));
 
             // Route link
-            const linkObj = await getLinkTrk(route);
+            const linkObj = await getLinkTrk({ str: route, debugMode: debugMode });
             routeData.link = linkObj;
 
             // Route extensions
-            const extensions = await getExtensions({
-              str: route,
-              pattern1: `<extensions>`,
-              pattern2: `</extensions>`
-            });
+            const extensions = await getExtensions({ str: route, pattern1: `<extensions>`, pattern2: `</extensions>`, debugMode: debugMode });
 
             if (extensions.length > 0 && extensions[0].extension) {
               routeData.extensions = extensions[0].extension;
@@ -897,11 +910,11 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getRoutes => `.magenta, JSON.stringify(resArr));
+        debugMode && await messageConcat({ methodName: `getRoutes`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
         resolve(resArr);
       } else {
-        console.log(":| No routes in the gpx file.");
-        debugMode && console.log(`test getRoutes => `.magenta, JSON.stringify([]));
+        console.log(":| No routes in the gpx file.".yellow);
+        debugMode && await messageConcat({ methodName: `getRoutes`, messagesArrObj: [] });
         resolve([]);
       }
     } catch (error) {
@@ -912,15 +925,11 @@ const getRoutes: GetRoutes = async ({ readGpxFile }) => {
 };
 
 // Waypoints
-const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
+const getWayPoints: GetWayPoints = async ({ readGpxFile, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // File creator
-      const wayPointsArray = await getStringBetweenIncludedPatterns({
-        str: readGpxFile,
-        pattern1: "<wpt",
-        pattern2: "</wpt>"
-      });
+      const wayPointsArray = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<wpt", pattern2: "</wpt>", debugMode: debugMode });
 
       if (wayPointsArray.result) {
         const resArr: GetWayPointsData[] = [];
@@ -963,33 +972,29 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
           // Check if data exists
           if (wptStr.resArr.length > 0) {
             // Position
-            const positionsArrObj = await getPositionsArr({ strArr: wptStr.resArr, pattern: "\"" });
+            const positionsArrObj = await getPositionsArr({ strArr: wptStr.resArr, pattern: "\"", debugMode: debugMode });
             wayPointsData.position = `${positionsArrObj[0].lat},${positionsArrObj[0].lon}`;
 
             // Elevation
-            const elevationsArr = await getElevationsArr({
-              strArr: wptStr.resArr,
-              pattern1: "<ele>",
-              pattern2: "</ele>"
-            });
+            const elevationsArr = await getElevationsArr({ strArr: wptStr.resArr, pattern1: "<ele>", pattern2: "</ele>", debugMode: debugMode });
             wayPointsData.elevation = parseFloat(elevationsArr.elevationArr[0].toString());
 
             // Link
-            const linkObj = await getLinkTrk(wptStr.resArr[1]);
+            const linkObj = await getLinkTrk({ str: wptStr.resArr[1], debugMode: debugMode });
             wayPointsData.link = linkObj;
 
             // Route extensions
-            const extensions = await getExtensions({ str: wptStr.resArr[1], pattern1: `<extensions>`, pattern2: `</extensions>` });
+            const extensions = await getExtensions({ str: wptStr.resArr[1], pattern1: `<extensions>`, pattern2: `</extensions>`, debugMode: debugMode });
             wayPointsData.extensions = extensions.length > 0 ? extensions[0].extension : null;
 
             // Record wpt elements
             const recordsWptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "speed", "course"];
 
-            recordsWptArr.map(async (element) => {
+            await Promise.all(recordsWptArr.map(async (element) => {
               // Record wpt elements
-              const elementArr = await getTagsValueArr({ strArr: wptStr.resArr, pattern1: `<${element}>`, pattern2: `</${element}>` });
+              const elementArr = await getTagsValueArr({ strArr: wptStr.resArr, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
               wayPointsData[element] = elementArr.tagsValueArr[1];
-            });
+            }));
 
             // ID
             wayPointsData["id"] = m;
@@ -999,13 +1004,12 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
           }
         }
 
-        debugMode && console.log(`test getWayPoints => `.magenta, JSON.stringify(resArr));
+        debugMode && await messageConcat({ methodName: `getWayPoints`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
         resolve(resArr);
       } else {
         // Console message
         console.log(":| No way points in the gpx file.".yellow);
-
-        debugMode && console.log(`test getWayPoints => `.magenta, JSON.stringify([]));
+        debugMode && await messageConcat({ methodName: `getWayPoints`, messagesArrObj: [] });
         resolve([]);
       }
     } catch (error) {
@@ -1016,26 +1020,26 @@ const getWayPoints: GetWayPoints = async ({ readGpxFile }) => {
 };
 
 // Extract gpx data
-const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
+const dataExtraction: DataExtraction = async ({ readGpxFile, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Metadata extraction
-      const gpxFileMetadata = await getMetaData({ readGpxFile });
+      const gpxFileMetadata = await getMetaData({ readGpxFile, debugMode });
 
       // Routes
-      const routes = await getRoutes({ readGpxFile });
+      const routes = await getRoutes({ readGpxFile: readGpxFile, debugMode: debugMode });
 
       // Tracks
-      const stagesTrackData: any = await getTracks({ readGpxFile });
+      const stagesTrackData: any = await getTracks({ readGpxFile, debugMode });
 
       // Way points
-      const wayPoints = await getWayPoints({ readGpxFile });
+      const wayPoints = await getWayPoints({ readGpxFile, debugMode });
 
       // Merge tracks
-      const mergedData: MergeStagesTrackData = await mergeStagesTrackData(stagesTrackData);
+      const mergedData: MergeStagesTrackData = await mergeStagesTrackData({ stagesTrackArr: stagesTrackData, debugMode });
 
       // Result object
-      const obj: DataExtractionData = {
+      const resObj: DataExtractionData = {
         gpxFileMetadata,
         wayPoints,
         routes,
@@ -1043,11 +1047,11 @@ const dataExtraction: DataExtraction = async ({ readGpxFile }) => {
         mergedData,
       };
 
-      debugMode && console.log(`test dataExtraction => `.magenta, JSON.stringify(obj));
-      resolve(obj);
+      debugMode && await messageConcat({ methodName: `getWayPoints`, messagesArrObj: [{ message: `${JSON.stringify(resObj)}`, color: "black" }] });
+      resolve(resObj);
     } catch (error) {
-      console.log(':( dataExtraction error'.red);
-      reject(console.log);
+      console.error(`:( dataExtraction error => ${error}`);
+      reject(error);
     }
   });
 };
@@ -1060,14 +1064,14 @@ const splitString: SplitString = async ({ str, pattern }) => {
       const resArr: string[] = str.split(pattern);
       resolve({ resArr, length: resArr.length });
     } catch (error) {
-      console.error(':( splitString error', error);
+      console.error(`:( splitString error => ${error}`);
       reject(error);
     }
   });
 };
 
 // Get cumulative elevations
-const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr }) => {
+const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Default
@@ -1091,10 +1095,10 @@ const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr 
         cumulativePositiveElevation: cumulativePositiveElevation
       };
 
-      debugMode && console.log(`test getCumulativeElevations => `.magenta, JSON.stringify(cumulativeElevationsObj));
+      debugMode && await messageConcat({ methodName: `getCumulativeElevations`, messagesArrObj: [{ message: `${JSON.stringify(cumulativeElevationsObj)}`, color: "black" }] });
       resolve(cumulativeElevationsObj);
     } catch (error) {
-      console.error(':( getCumulativeElevations error', error);
+      console.error(`:( getCumulativeElevations error => ${error}`);
       reject(error);
     }
   });
@@ -1114,14 +1118,14 @@ const convertPositionsToArr: ConvertPositionsToArr = async ({ positionsArrObj })
 
       resolve(resArr);
     } catch (error) {
-      console.error(':( convertPositionsToArr error', error);
+      console.error(`:( convertPositionsToArr error => ${error}`);
       reject(error);
     }
   });
 };
 
 // Get selected string from string
-const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
+const getPositionsArr: GetPositionsArr = async ({ strArr, pattern, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (Array.isArray(strArr)) {
@@ -1135,7 +1139,7 @@ const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
           }));
 
         if (Array.isArray(resArr)) {
-          debugMode && console.log(`test getPositionsArr => `.magenta, JSON.stringify(resArr));
+          debugMode && await messageConcat({ methodName: `getPositionsArr`, messagesArrObj: [{ message: `${JSON.stringify(resArr)}`, color: "black" }] });
           resolve(resArr);
         } else {
           // Results obj
@@ -1144,29 +1148,29 @@ const getPositionsArr: GetPositionsArr = async ({ strArr, pattern }) => {
             lon: 0,
           }
 
-          debugMode && console.log(`test getPositionsArr => `.magenta, JSON.stringify(resultsObj));
+          debugMode && await messageConcat({ methodName: `getPositionsArr`, messagesArrObj: [{ message: `${JSON.stringify([resultsObj])}`, color: "black" }] });
           resolve([resultsObj]);
         }
       } else {
         console.log(`:( strArr is not an array`.red);
       }
     } catch (error) {
-      console.error(':( getPositionsArr error', error);
+      console.error(`:( getPositionsArr error => ${error}`);
       reject(error);
     }
   });
 };
 
 // Get elevations
-const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 }) => {
+const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       // If no elevations
       if (Array.isArray(strArr) && strArr.length > 0) {
         // Result array
-        const resArrPromises = strArr.map(async (str, i) => {
+        const resArrPromises = strArr.map(async (str) => {
           // Get each elevation
-          const eleStr = await getString({ str, pattern1, pattern2 });
+          const eleStr = await getString({ str, pattern1, pattern2, debugMode: debugMode });
 
           // Record
           if (!isNaN(parseFloat(eleStr[0]))) {
@@ -1181,28 +1185,29 @@ const getElevationsArr: GetElevationArr = async ({ strArr, pattern1, pattern2 })
         // Filter values
         const resArr = resolvedArr.filter(ele => typeof ele === 'number' && !isNaN(ele)) as number[];
 
-        debugMode && console.log(`test getElevationsArr => `.magenta, JSON.stringify({ elevationArr: resArr }));
+        debugMode && await messageConcat({ methodName: `getElevationsArr`, messagesArrObj: [{ message: `${JSON.stringify({ elevationArr: resArr })}`, color: "black" }] });
         resolve({ elevationArr: resArr });
       } else {
-        debugMode && console.log(`test getElevationsArr => `.magenta, JSON.stringify({ elevationArr: [] }));
+        debugMode && await messageConcat({ methodName: `getElevationsArr`, messagesArrObj: [] });
+
         resolve({ elevationArr: [] });
       }
     } catch (error) {
-      console.error(':( getElevationsArr error => ', error);
+      console.error(`:( getElevationsArr error => ${error}`);
       reject(error);
     }
   });
 };
 
 // Get tag's value
-const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) => {
+const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (Array.isArray(strArr)) {
         // Mapping selected string array to promises
         const promises = strArr.map(async (str) => {
           // Get each tag value
-          const tagValue = await getString({ str, pattern1, pattern2 });
+          const tagValue = await getString({ str, pattern1, pattern2, debugMode: debugMode });
 
           return tagValue[0] ? tagValue[0] : "";
         });
@@ -1210,33 +1215,44 @@ const getTagsValueArr: GetTagsValueArr = async ({ strArr, pattern1, pattern2 }) 
         // Resolve all promises and return the resulting array
         const tagsValueArr = await Promise.all(promises);
 
-        debugMode && console.log(`test getTagsValueArr => `.magenta, JSON.stringify({ tagsValueArr: tagsValueArr }));
+        debugMode && await messageConcat({ methodName: `getTagsValueArr`, messagesArrObj: [{ message: `${JSON.stringify({ tagsValueArr: tagsValueArr })}`, color: "black" }] });
         resolve({ tagsValueArr: tagsValueArr });
       } else {
-        debugMode && console.log(`test getTagsValueArr => `.magenta, JSON.stringify({ tagsValueArr: [] }));
+        debugMode && await messageConcat({ methodName: `getTagsValueArr`, messagesArrObj: [] });
         resolve({ tagsValueArr: [] });
       }
     } catch (error) {
-      console.error(':( getTagsValueArr error', error);
+      console.error(`:( getTagsValueArr error => ${error}`);
       reject(error);
     }
   });
 };
 
 // Get bounds tag
-const getBounds: GetBounds = async (metaData) => {
+const getBounds: GetBounds = async ({ metaData, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Default obj
+      const boundsDataObj: GetBoundsData = {
+        bounds: {
+          minLat: null,
+          minLon: null,
+          maxLat: null,
+          maxLon: null
+        }
+      };
+
       // Split string
-      const bounds = metaData.metaData.str.split(`<bounds`);
+      const bounds = metaData.str.split(`< bounds`);
 
       // Check if bounds tag exists
       if (bounds.length > 1) {
         // Select values
         const selectedValue = bounds[1].split("\"");
 
-        // Obj
-        const boundsDataObj: GetBoundsData = {
+        // Result obj
+        const updatedBoundsDataObj: GetBoundsData = {
+          ...boundsDataObj,
           bounds: {
             minLat: parseFloat(selectedValue[1]),
             minLon: parseFloat(selectedValue[3]),
@@ -1245,21 +1261,16 @@ const getBounds: GetBounds = async (metaData) => {
           }
         };
 
-        debugMode && console.log(`test getBounds => `.magenta, JSON.stringify(boundsDataObj));
-        resolve(boundsDataObj);
+        debugMode && await messageConcat({ methodName: `getBounds`, messagesArrObj: [{ message: `${JSON.stringify(updatedBoundsDataObj)}`, color: "black" }] });
+        resolve(updatedBoundsDataObj);
       } else {
-        // Obj
-        const boundsDataObj: GetBoundsData = {
-          bounds: {
-            minLat: null,
-            minLon: null,
-            maxLat: null,
-            maxLon: null
-          }
+        // Result obj
+        const updatedBoundsDataObj: GetBoundsData = {
+          ...boundsDataObj
         };
 
-        debugMode && console.log(`test getBounds => `.magenta, JSON.stringify(boundsDataObj));
-        resolve(boundsDataObj);
+        debugMode && await messageConcat({ methodName: `getBounds`, messagesArrObj: [{ message: `${JSON.stringify(updatedBoundsDataObj)}`, color: "black" }] });
+        resolve(updatedBoundsDataObj);
       }
     } catch (error) {
       console.log(":( getBounds error".red);
@@ -1269,58 +1280,51 @@ const getBounds: GetBounds = async (metaData) => {
 };
 
 // Get link tag
-const getLink: GetLink = async (str) => {
+const getLink: GetLink = async ({ str, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Default empty object
+      let linkDataObj: GetLinkData = {
+        href: null,
+        text: null,
+        type: null
+      };
+
       // Check if link tag exists
-      const checkedLinks = str.str.includes(`<link`);
+      const checkedLinks = str.includes(`< link`);
 
       // Data existing checking
       if (checkedLinks) {
         // Split str
-        const links = str.str.split(`<link`);
+        const links = str.split(`< link`);
 
         // Get href
-        let linksArr = links[1].split(`"`);
-        let href = linksArr[1] ?? "";
+        const linksArr = links[1].split(`"`);
+        linkDataObj = { ...linkDataObj, href: linksArr[1] ?? "" };
 
         // Get text
-        let textArray: string[] = await getString({ str: links[1], pattern1: `<text>`, pattern2: `</text>` });
-        let text: string = textArray[0] ?? "";
+        const textArray: string[] = await getString({ str: links[1], pattern1: `<text>`, pattern2: `</text>`, debugMode: debugMode });
+        linkDataObj = { ...linkDataObj, text: textArray[0] ?? "" };
 
         // Get type
-        let typeArray: string[] = await getString({ str: links[1], pattern1: `<type>`, pattern2: `</type>` });
-        let type: string = typeArray[0] ?? "";
+        const typeArray: string[] = await getString({ str: links[1], pattern1: `<type>`, pattern2: `</type>`, debugMode: debugMode });
+        linkDataObj = { ...linkDataObj, type: typeArray[0] ?? "" };
 
-        // Link data obj
-        const linkDataObj: GetLinkData = {
-          href: href,
-          text: text,
-          type: type
-        };
-
-        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkDataObj));
+        debugMode && await messageConcat({ methodName: `getLink`, messagesArrObj: [{ message: `${JSON.stringify(linkDataObj)}`, color: "black" }] });
         resolve(linkDataObj);
       } else {
-        // Return an empty object
-        let linkDataObj: GetLinkData = {
-          href: null,
-          text: null,
-          type: null
-        };
-
-        debugMode && console.log(`test getLink => `.magenta, JSON.stringify(linkDataObj));
+        debugMode && await messageConcat({ methodName: `getLink`, messagesArrObj: [{ message: `${JSON.stringify(linkDataObj)}`, color: "black" }] });
         resolve(linkDataObj);
       }
     } catch (error) {
-      console.log(":( getLink error".red);
-      reject(console.log);
+      console.error(`:( getLink error => ${error}`);
+      reject(error);
     }
   });
 };
 
 // Get metadata from a GPX file
-const getMetaData: GetMetaData = async ({ readGpxFile }) => {
+const getMetaData: GetMetaData = async ({ readGpxFile, debugMode }) => {
   return new Promise(async (resolve, reject) => {
     try {
       let metadataObj: GetMetaDataData = {
@@ -1339,7 +1343,7 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
       };
 
       // Extract creator name from the GPX file
-      const resultData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "creator=", pattern2: "<metadata>" });
+      const resultData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "creator=", pattern2: "<metadata>", debugMode: debugMode });
 
       // Default
       let gpxFileCreatorName = "";
@@ -1351,14 +1355,14 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
       }
 
       // Extract metadata from the GPX file
-      const metaData: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>" });
+      const metaData: GetStringBetweenIncludedPatternsData = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>", debugMode: debugMode });
 
       if (metaData.result) {
         // Extract bounds from the metadata
-        const boundsObj: GetBoundsData = await getBounds({ metaData: { str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>" } });
+        const boundsObj: GetBoundsData = await getBounds({ metaData: { str: readGpxFile, pattern1: "<metadata>", pattern2: "</metadata>", debugMode: debugMode }, debugMode: debugMode });
 
         // Extract links from metadata
-        const linkObj: GetLinkData | null = await getLink({ str: readGpxFile, pattern: "<metadata>", pattern2: "</metadata>" });
+        const linkObj: GetLinkData | null = await getLink({ str: readGpxFile, pattern: "<metadata>", pattern2: "</metadata>", debugMode: debugMode });
 
         const arr = [`name`, `desc`, `author`, `copyright`, `time`, `keywords`, `extensions`];
         const resArr: string[] = [];
@@ -1376,25 +1380,31 @@ const getMetaData: GetMetaData = async ({ readGpxFile }) => {
         }
 
         // Assign extracted metadata to metadataObj
-        Object.keys(metadataObj.gpxFileMetadata).forEach((property, f) => {
+        Object.keys(metadataObj.gpxFileMetadata).forEach(async (property, f) => {
           metadataObj.gpxFileMetadata[property] = resArr[f - 1];
           if (Object.keys(metadataObj.gpxFileMetadata).length === f + 1) {
-            metadataObj.gpxFileMetadata.gpxFileCreatorName = gpxFileCreatorName;
-            metadataObj.gpxFileMetadata.gpxFileBounds = boundsObj;
-            metadataObj.gpxFileMetadata.gpxFileLink = linkObj;
+            // Up values into object
+            metadataObj = {
+              ...metadataObj,
+              gpxFileMetadata: {
+                ...metadataObj.gpxFileMetadata,
+                gpxFileCreatorName: gpxFileCreatorName,
+                gpxFileBounds: boundsObj,
+                gpxFileLink: linkObj
+              }
+            };
 
-            debugMode && console.log(`test getMetaData => `.magenta, JSON.stringify(metadataObj));
+            debugMode && await messageConcat({ methodName: `getMetaData`, messagesArrObj: [{ message: `${JSON.stringify(metadataObj)}`, color: "black" }] });
             resolve(metadataObj);
           }
         });
       } else {
-        console.log(":( Gpx file is wrong. Check metadata tag in your gpx file.".red);
-
-        debugMode && console.log(`test getMetaData => `.magenta, JSON.stringify(metadataObj));
+        console.log(":| No metadata tags in your gpx file.".yellow);
+        debugMode && await messageConcat({ methodName: `getMetaData`, messagesArrObj: [{ message: `${JSON.stringify(metadataObj)}`, color: "black" }] });
         resolve(metadataObj);
       }
     } catch (error) {
-      console.log(':( getMetaData error'.red);
+      console.error(`:( getMetaData error => ${error}`);
       reject(error);
     }
   });
@@ -1488,7 +1498,7 @@ const trackDistanceCalculation: TrackDistanceCalculation = async ({ positionsArr
         // Total distance
         const totalDistance = filteredArray.reduce(reducer);
 
-        if (totalDistance !== undefined) {
+        if (totalDistance) {
           resolve(totalDistance);
         } else {
           resolve(0); // Or handle the case when totalDistance is undefined
@@ -1498,13 +1508,14 @@ const trackDistanceCalculation: TrackDistanceCalculation = async ({ positionsArr
         resolve(0);
       }
     } catch (error) {
-      console.log(":( trackDistanceCalculation error".red);
+      console.error(`:( trackDistanceCalculation error => ${error}`);
       reject(console.log);
     }
   });
 };
 
 export {
+  messageConcat,
   rootAppPath,
   readGpxFile,
   getStringBetweenIncludedPatterns,

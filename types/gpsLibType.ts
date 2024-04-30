@@ -1,14 +1,43 @@
 // Root app directory
-type RootAppPath = () => Promise<{ rootAppDirectory: string }>;
+interface RootAppPathData {
+  rootAppDirectory: string;
+}
+
+type RootAppPath = () => Promise<RootAppPathData>;
+
+// Concatenation messages
+interface MessageConcatProps {
+  methodName: string;
+  messagesArrObj: {
+    message: string,
+    color: any
+  }[];
+}
+
+interface MessageConcatData {
+  message: string;
+}
+
+type MessageConcat = (props: MessageConcatProps) => Promise<MessageConcatData>;
 
 // Read gpx file
-type ReadGpxFile = (gpxFilePath: string) => Promise<string | false>;
+interface ReadGpxFileProps {
+  gpxFilePath: string;
+  debugMode: boolean;
+}
+
+interface ReadGpxFileData {
+  gpxFileStr: string | null;
+}
+
+type ReadGpxFile = (props: ReadGpxFileProps) => Promise<ReadGpxFileData>;
 
 // Get string between two included string of characters
 interface GetStringBetweenIncludedPatternsProps {
   str: string;
   pattern1: string | RegExp;
   pattern2: string | RegExp;
+  debugMode: boolean;
 }
 
 interface GetStringBetweenIncludedPatternsData {
@@ -47,23 +76,28 @@ interface StageData {
   };
 }
 
+interface MergeStagesTrackProps {
+  stagesTrackArr: StageData[];
+  debugMode: boolean;
+}
+
 interface MergeStagesTrackData {
-  namesArrObj: { id: string; name: string }[];
-  typeArrObj: { id: string; type: string }[];
-  cmtArrObj: { id: string; type: string }[];
-  descArrObj: { id: string; type: string }[];
-  srcArrObj: { id: string; type: string }[];
-  urlArrObj: { id: string; type: string }[];
-  urlnameArrObj: { id: string; type: string }[];
-  linkArrObj: { id: string; type: string }[];
-  numberArrObj: { id: string; type: string }[];
-  extensionsArrObj: { id: string; type: string }[];
+  namesArrObj: { id: number; name: string }[];
+  typeArrObj: { id: number; type: string }[];
+  cmtArrObj: { id: number; type: string }[];
+  descArrObj: { id: number; type: string }[];
+  srcArrObj: { id: number; type: string }[];
+  urlArrObj: { id: number; type: string }[];
+  urlnameArrObj: { id: number; type: string }[];
+  linkArrObj: { id: number; type: string }[];
+  numberArrObj: { id: number; type: string }[];
+  extensionsArrObj: { id: number; type: string }[];
   distances: {
     full: {
       meters: number | null;
       yards: number | null;
     };
-    distancesArrObj: { id: string; distance: { meters: number; yards: number } }[];
+    distancesArrObj: { id: number; distance: { meters: number; yards: number } }[];
   };
   positions: {
     full: any[];
@@ -73,7 +107,7 @@ interface MergeStagesTrackData {
     full: number[];
     min: number | null;
     max: number | null;
-    minMaxArrObj: { id: string; elevations: number[] }[];
+    minMaxArrObj: { id: number; elevations: number[] }[];
   };
   cumulativeElevations: {
     cumulativePositiveElevation: number | null;
@@ -82,7 +116,7 @@ interface MergeStagesTrackData {
   };
 }
 
-type MergeStagesTrack = (stagesTrackArr: StageData[]) => Promise<MergeStagesTrackData>;
+type MergeStagesTrack = (props: MergeStagesTrackProps) => Promise<MergeStagesTrackData>;
 
 // Get string between tags
 interface GetStringProps {
@@ -94,23 +128,29 @@ interface GetStringProps {
 type GetString = (props: GetStringProps) => Promise<string[]>;
 
 // Get link tag
+interface GetLinkProps {
+  str: string;
+  debugMode: boolean;
+}
+
 interface GetLinkTrkData {
   href: string | null;
   text: string | null;
   type: string | null;
 }
 
-type GetLinkTrk = (str: string) => Promise<GetLinkTrkData>;
+type GetLinkTrk = (props: GetLinkProps) => Promise<GetLinkTrkData>;
 
 // Get extension tag
-interface GetExtensionsData {
-  extension: string | null;
-}
-
 interface GetStringProps {
   str: string;
   pattern1: string | RegExp;
   pattern2: string | RegExp;
+  debugMode: boolean;
+}
+
+interface GetExtensionsData {
+  extension: string | null;
 }
 
 type GetExtensions = (props: GetStringProps) => Promise<GetExtensionsData[]>;
@@ -118,6 +158,7 @@ type GetExtensions = (props: GetStringProps) => Promise<GetExtensionsData[]>;
 // Get tracks
 interface GetTracksProps {
   readGpxFile: string;
+  debugMode: boolean;
 }
 
 interface GetTracksData {
@@ -311,6 +352,7 @@ interface GetRoutesData {
 
 interface GetRoutesProps {
   readGpxFile: string;
+  debugMode: boolean;
 }
 
 type GetRoutes = (props: GetRoutesProps) => Promise<GetRoutesData[]>;
@@ -318,6 +360,7 @@ type GetRoutes = (props: GetRoutesProps) => Promise<GetRoutesData[]>;
 // Waypoints
 interface GetWayPointsProps {
   readGpxFile: string;
+  debugMode: boolean;
 }
 
 interface GetWayPointsData {
@@ -354,6 +397,7 @@ type GetWayPoints = (props: GetWayPointsProps) => Promise<GetWayPointsData[]>;
 // Data extraction
 interface DataExtractionProps {
   readGpxFile: string;
+  debugMode: boolean;
 }
 
 interface DataExtractionData {
@@ -384,6 +428,7 @@ interface GetCumulativeElevationsArray extends Array<number> { }
 
 interface GetCumulativeElevationsProps {
   elevationsArr: GetCumulativeElevationsArray;
+  debugMode: boolean;
 }
 
 interface GetCumulativeElevationsData {
@@ -396,6 +441,7 @@ type GetCumulativeElevations = (props: GetCumulativeElevationsProps) => Promise<
 // Convert array of positions object to an array of positions arrays
 interface ConvertPositionsToArrProps {
   positionsArrObj: GetPositionsArrData[];
+  debugMode: boolean;
 }
 
 interface ConvertPositionsToArrData {
@@ -409,6 +455,7 @@ type ConvertPositionsToArr = (props: ConvertPositionsToArrProps) => Promise<Conv
 interface GetPositionsArrProps {
   strArr: string[] | SplitStringData;
   pattern: string;
+  debugMode: boolean;
 }
 
 interface GetPositionsArrData {
@@ -423,6 +470,7 @@ interface GetElevationArrProps {
   strArr: string[] | SplitStringData;
   pattern1: string | RegExp;
   pattern2: string | RegExp;
+  debugMode: boolean;
 }
 
 interface GetElevationArrData {
@@ -436,6 +484,7 @@ interface GetTagsValueArrProps {
   strArr: string[];
   pattern1: string | RegExp;
   pattern2: string | RegExp;
+  debugMode: boolean;
 }
 
 interface GetTagsValueArrData {
@@ -448,6 +497,7 @@ type GetTagsValueArr = (props: GetTagsValueArrProps) => Promise<GetTagsValueArrD
 interface GetBoundsProps {
   [key: string]: any;
   metaData: GetStringBetweenIncludedPatternsProps;
+  debugMode: boolean;
 }
 
 interface GetBoundsData {
@@ -465,6 +515,7 @@ type GetBounds = (props: GetBoundsProps) => Promise<GetBoundsData>;
 interface GetLinkProps {
   [key: string]: any;
   str: string;
+  debugMode: boolean;
 }
 
 interface GetLinkData {
@@ -478,6 +529,7 @@ type GetLink = (props: GetLinkProps) => Promise<GetLinkData>;
 // Get metadata from a GPX file
 interface GetMetaDataProps {
   readGpxFile: string;
+  debugMode: boolean;
 }
 
 interface GetMetaDataData {
@@ -511,6 +563,7 @@ type TrackDistanceCalculation = (props: TrackDistanceCalculationProps) => Promis
 
 export {
   RootAppPath,
+  MessageConcat,
   ReadGpxFile,
   GetStringBetweenIncludedPatterns,
   GetStringBetweenIncludedPatternsData,
