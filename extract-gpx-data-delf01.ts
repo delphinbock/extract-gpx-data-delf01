@@ -1,3 +1,5 @@
+import * as util from 'util';
+
 // Libs
 import { readGpxFile, dataExtraction } from './lib/gpsLib';
 
@@ -35,6 +37,9 @@ const extractGpxData = async (gpxFilePath: string, debugMode: boolean): Promise<
             const dataExtractionObj = await dataExtraction(dataExtractionProps);
 
             // console.log('dataObj', JSON.stringify(dataObj));
+
+            //console.log(util.inspect(dataExtractionObj, {showHidden: false, depth: null, colors: true}))
+
 
             return dataExtractionObj;
         }
