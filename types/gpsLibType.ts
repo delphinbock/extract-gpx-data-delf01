@@ -556,9 +556,10 @@ type CalculateDistanceBetweenPositions = (props: GetPositionsArrData[]) => Promi
 // Track distance calculation
 interface TrackDistanceCalculationProps {
   positionsArray: number[][];
+  debugMode: boolean;
 }
 
-type TrackDistanceCalculation = (props: TrackDistanceCalculationProps) => Promise<number>;
+type TrackDistanceCalculation = (props: TrackDistanceCalculationProps) => Promise<number | null>;
 
 
 export {
