@@ -453,7 +453,7 @@ const getTracks: GetTracks = async ({ readGpxFile, debugMode }) => {
         // Listing stages track
         for (let k = 0; k < stagesTrackArray.result.length; k++) {
           // Default obj
-          const trackData: GetTracksData = {
+          let trackData: GetTracksData = {
             id: null,
             name: null,
             type: null,
@@ -557,67 +557,57 @@ const getTracks: GetTracks = async ({ readGpxFile, debugMode }) => {
           // Check if data exists
           if (trkptStr.resArr.length > 0) {
             // ID track
-            trackData.id = k.toString();
-
-
+            trackData = { ...trackData, id: k.toString() };
 
             // Positions array of objects
             const positionsArrObj = await getPositionsArr({ strArr: trkptStr.resArr, pattern: "\"", debugMode: debugMode });
-            trackData.positions.positionsArrObj = positionsArrObj;
+            trackData = { ...trackData, positions: { ...trackData.positions, positionsArrObj } };
 
             // Positions array of arrays
             const positionsArrArr = await convertPositionsToArr({ positionsArrObj: positionsArrObj, debugMode: debugMode });
             if (Array.isArray(positionsArrArr)) {
-              trackData.positions.positionsArrArr = positionsArrArr;
+              trackData = { ...trackData, positions: { ...trackData.positions, positionsArrArr } };
             }
+
             // Distance calculation
             const distance = await trackDistanceCalculation({ positionsArray: positionsArrArr.positions, debugMode: debugMode });
 
-            console.log("distance", distance)
-
             // Assign distance in meters
-            trackData.distance.meters = distance;
+            trackData = { ...trackData, distance: { ...trackData.distance, meters: distance } };
 
             // Convert distance to yards if it's a number
             if (typeof distance === 'number') {
-              trackData.distance.yards = distance * 1.093613;
+              trackData = { ...trackData, distance: { ...trackData.distance, yards: distance * 1.093613 } };
             } else {
               // Handle the case where distance is not a number
-              trackData.distance.yards = null;
+              trackData = { ...trackData, distance: { ...trackData.distance, yards: null } };
             }
 
             // Elevations
-            const elevationsResult: GetElevationArrData = await getElevationsArr({ strArr: trkptStr.resArr, pattern1: "<ele>", pattern2: "</ele>", debugMode: debugMode });
-            const elevationsArr = elevationsResult.elevationArr;
+            const { elevationArr }: GetElevationArrData = await getElevationsArr({ strArr: trkptStr.resArr, pattern1: "<ele>", pattern2: "</ele>", debugMode: debugMode });
 
             // Full elevations
-            trackData.elevations.full = elevationsArr;
+            trackData = { ...trackData, elevations: { ...trackData.elevations, full: elevationArr } };
 
             // Min elevation
-            const minEle = Math.min(...elevationsArr);
-            trackData.elevations.min = minEle;
+            trackData = { ...trackData, elevations: { ...trackData.elevations, min: Math.min(...elevationArr) } };
 
             // Max elevation
-            const maxEle = Math.max(...elevationsArr);
-            trackData.elevations.max = maxEle;
+            trackData = { ...trackData, elevations: { ...trackData.elevations, max: Math.max(...elevationArr) } };
 
             // Cumulative elevations
-            const cumulativeElevations: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationsArr, debugMode: debugMode });
-            trackData.elevations.cumulativeNegativeElevation = cumulativeElevations.cumulativeNegativeElevation;
-            trackData.elevations.cumulativePositiveElevation = cumulativeElevations.cumulativePositiveElevation;
+            const { cumulativeNegativeElevation, cumulativePositiveElevation }: GetCumulativeElevationsData = await getCumulativeElevations({ elevationsArr: elevationArr, debugMode: debugMode });
+            trackData = { ...trackData, elevations: { ...trackData.elevations, cumulativeNegativeElevation: cumulativeNegativeElevation } };
+            trackData = { ...trackData, elevations: { ...trackData.elevations, cumulativePositiveElevation: cumulativePositiveElevation } };
 
             // Track points records
             const recordsTrkptArr = ["time", "magvar", "geoidheight", "name", "cmt", "desc", "src", "url", "urlname", "sym", "type", "fix", "sat", "hdop", "vdop", "pdop", "ageofdgpsdata", "dgpsid", "extensions", "speed", "course"];
 
-            recordsTrkptArr.map(async (element) => {
+            for (const element of recordsTrkptArr) {
               const arr = [trksegStr[1]];
               const elementArr = await getTagsValueArr({ strArr: arr, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
-              const propertyName = `${element}s`;
-              trackData[propertyName] = { full: elementArr };
-            });
-
-            // ID
-            trackData["id"] = k.toString();
+              trackData = { ...trackData, [`${element}s`]: { full: elementArr } };
+            }
 
             // Records trk "name", "type", "cmt", "desc", "src", "url", "urlname", "number" tags
             const recordsTrkArr = ["name", "type", "cmt", "desc", "src", "url", "urlname", "number"];
@@ -625,18 +615,18 @@ const getTracks: GetTracks = async ({ readGpxFile, debugMode }) => {
             for (const element of recordsTrkArr) {
               // Record trk elements
               const elementArr = await getString({ str: stage, pattern1: `<${element}>`, pattern2: `</${element}>`, debugMode: debugMode });
-              trackData[element] = elementArr[0];
+              trackData = { ...trackData, [element]: elementArr.length > 0 ? elementArr[0] : null };
             }
 
             // Link
             // <link href="https://mywebsite.com"><text>My Website</text><type>cycling</type></link>
             const linkObj = await getLinkTrk({ str: stage, debugMode: debugMode });
-            trackData.link = linkObj;
+            trackData = { ...trackData, link: linkObj };
 
             // Route extensions
             // <extensions><ogr:id>17</ogr:id><ogr:longitude>10.684415</ogr:longitude><ogr:latitude>53.865650</ogr:latitude></extensions>
             const extensions = await getExtensions({ str: stage, pattern1: "<extensions>", pattern2: "</extensions>", debugMode: debugMode });
-            trackData.extensions = extensions[0];
+            trackData = { ...trackData, extensions: extensions[0] };
 
             // Add the processed track data to the result array
             resArr.push(trackData);
@@ -663,7 +653,7 @@ const getRoutes: GetRoutes = async ({ readGpxFile, debugMode }) => {
     try {
       // Get route tag
       const routesArr = await getStringBetweenIncludedPatterns({ str: readGpxFile, pattern1: "<rte>", pattern2: "</rte>", debugMode: debugMode });
-      console.log(routesArr)
+
       if (routesArr.result) {
         const resArr: GetRoutesData[] = [];
 
@@ -959,7 +949,7 @@ const dataExtraction: DataExtraction = async ({ readGpxFile, debugMode }) => {
       // Tracks
       const stagesTrackData: any = await getTracks({ readGpxFile, debugMode });
 
-      console.log("stagesTrackData", stagesTrackData);
+      // console.log("stagesTrackData", stagesTrackData);
 
       // Way points
       const wayPoints = await getWayPoints({ readGpxFile, debugMode });
@@ -1010,11 +1000,14 @@ const getCumulativeElevations: GetCumulativeElevations = async ({ elevationsArr,
       // Check existing elevations values
       if (elevationsArr.length > 1) {
         // Elevations calculation
-        for (const elevation of elevationsArr) {
-          if (elevation < 0) {
-            cumulativeNegativeElevation += elevation;
+        for (let i = 1; i < elevationsArr.length; i++) {
+          // Elevations difference calculation
+          const elevationDifference = elevationsArr[i] - elevationsArr[i - 1];
+
+          if (elevationDifference < 0) {
+            cumulativeNegativeElevation += elevationDifference;
           } else {
-            cumulativePositiveElevation += elevation;
+            cumulativePositiveElevation += elevationDifference;
           }
         }
       }
