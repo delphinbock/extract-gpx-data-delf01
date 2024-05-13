@@ -1,53 +1,81 @@
 ![image](./extract-gpx-data-delf01.jpg)
 
-[![npm version](https://badge.fury.io/js/extract-gpx-data-delf01.svg)](https://badge.fury.io/js/extract-gpx-data-delf01)
-[![Node version](https://img.shields.io/badge/node->=14.18.0-orange.svg?style=style=flat-square)](https://nodejs.org/en/about/releases/)
+[![Version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&r=r&ts=1683906897&type=6e&v=2.0.0&x2=0)](https://nodejs.org/en/about/releases/)
+[![NPM version](https://img.shields.io/badge/npm-^10.7.0-red.svg?logo=npm&style=style=flat-square)](https://nodejs.org/en/about/releases/)
+[![TS version](https://img.shields.io/badge/typescript-^5.4.0-blue.svg?logo=typescript&style=style=flat-square)](https://nodejs.org/en/about/releases/)
+[![Node version](https://img.shields.io/badge/node-^22.1.0-green.svg?logo=nodedotjs&style=style=flat-square)](https://nodejs.org/en/about/releases/)
 [![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=style=flat-square)](https://www.topografix.com/gpx.asp)
 [![Documentation](https://img.shields.io/badge/Documentation-github-yellow.svg?style=style=flat-square)](https://github.com/delphinbock/extract-gpx-data-delf01/blob/main/README.md)
 
-Node module that extract data from gpx file and returns a data JSON object.<br />
+Node module that extract data from gpx file and returns a data JSON object.
 
-You can report issues related to the module: [issues](https://github.com/delphinbock/extract-gpx-data-delf01/issues)<br />
+You can report issues related to the module: [issues](https://github.com/delphinbock/extract-gpx-data-delf01/issues)
 
 ## Installation
-1. Install extract-gpx-data-delf01 `npm install extract-gpx-data-delf01`
-2. Create a gpx files directory at the root of the application.<br />
-For example, create a directory named "gpx_files" and/or a subdirectory named "tracks".<br /><br />
-![image](./demo1.jpg)<br />
-3. Put gpx files in this directory or subdirectory.<br />
-Multiple tracks gpx file example: [multiple tracks gpx file](https://github.com/delphinbock/gpx_veloscenie/blob/main/veloscenie.gpx)<br />
-Complete gpx file to test data extraction: [test gpx file](https://github.com/delphinbock/test_gpx_files/blob/main/test.gpx)<br />
-4. Use the following code. Write the path name of the gpx files folder like in the code's example.<br />
-For examples: "directory/subdirectory/gpxName.gpx" or "directory/gpxName.gpx".<br />
+
+1. Add the package to your project's node_modules directory
+
+NPM
+
+```shell
+npm i extract-gpx-data-delf01
+```
+
+Yarn
+
+```shell
+yarn add extract-gpx-data-delf01
+```
+
+PNPM
+
+```shell
+pnpm add extract-gpx-data-delf01
+```
+
+Bun
+
+```shell
+bun install extract-gpx-data-delf01
+```
+
+2. Create a gpx files directory at the root of the application.  
+   For example, create a directory named "gpx_files" and/or a subdirectory named "tracks".
+
+   ![image](./demo1.jpg)
+
+3. Put gpx files in this directory or subdirectory.  
+   Multiple tracks gpx file example: [multiple tracks gpx file](https://github.com/delphinbock/gpx_veloscenie/blob/main/veloscenie.gpx)  
+   Complete gpx file to test data extraction: [test gpx file](https://github.com/delphinbock/test_gpx_files/blob/main/test.gpx)
+4. Use the following code. Write the path name of the gpx files folder like in the code's example.  
+   For examples: "directory/subdirectory/gpxName.gpx" or "directory/gpxName.gpx".
+
+`The second parameter is an boolean allowing to activate the integrated debug mode.`
+
 ```javascript
-// NPM
-const extractGpxDataDelf01 = require('extract-gpx-data-delf01');
+import { DataExtractionProps } from "./types/gpsLibType";
 
-// Async function
 const runFunction = async () => {
+  // Get gpx data file
+  const gpxData = await extractGpxData("./gpx_files/test.gpx", false);
 
-    // Get gpx data file
-    let gpxData = await extractGpxDataDelf01.extractGpxData('gpx_files/veloscenie.gpx');
-
-    // Console message
-    console.log(gpxData);
-
-    return gpxData;
-}
+  return gpxData;
+};
 
 runFunction();
 ```
 
 ## Video installation
+
 [![Demo video](./youtube.jpg)](https://www.youtube.com/watch?v=DbIJi81ico4)
 
 ## Explanation
 
-You can use a gpx file containing a single track or multiple tracks.<br />
-The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the routes (routes), the information on each of the tracks (stagesTrackData), the information of all way points (wayPoints), the information of all the merged tracks (mergeStagesTrackData).<br />
-The main information extracted from the gpx file are the metadata, distances (meter, yard), elevations, positions, types of tracks, maximum and minimum altitudes, names of the tracks.<br />
-Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)<br />
+You can use a gpx file containing a single track or multiple tracks.  
+The returned object contains the metadata of the gpx file (gpxFileMetadata), the information on each of the routes (routes), the information on each of the tracks (stagesTrackData), the information of all way points (wayPoints), the information of all the merged tracks (mergeStagesTrackData).  
+The main information extracted from the gpx file are the metadata, distances (meter, yard), elevations, positions, types of tracks, maximum and minimum altitudes, names of the tracks.  
+Url for gpx file details: [gpx files](https://www.topografix.com/GPX/1/1/)  
 
 ## Example returned object of gpx data in json format
 

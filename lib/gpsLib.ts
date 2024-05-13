@@ -52,7 +52,6 @@ import {
   GetMetaDataData,
   CalculateDistanceBetweenPositions,
   TrackDistanceCalculation,
-  // StageData,
 } from '../types/gpsLibType';
 
 // Concatenation of several messages
