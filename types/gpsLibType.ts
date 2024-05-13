@@ -370,8 +370,8 @@ interface GetWayPointsData {
   position: string | null;
   elevation: number | null;
   time: string | null;
-  magvar: string | null;
-  geoidheight: string | null;
+  magvar: number | null;
+  geoidheight: number | null;
   cmt: string | null;
   desc: string | null;
   src: string | null;
@@ -380,15 +380,15 @@ interface GetWayPointsData {
   sym: string | null;
   type: string | null;
   fix: string | null;
-  sat: string | null;
-  hdop: string | null;
-  vdop: string | null;
-  pdop: string | null;
-  ageofdgpsdata: string | null;
-  dgpsid: string | null;
+  sat: number | null;
+  hdop: number | null;
+  vdop: number | null;
+  pdop: number | null;
+  ageofdgpsdata: number | null;
+  dgpsid: number | null;
   extensions: string | null;
-  speed: string | null;
-  course: string | null;
+  speed: number | null;
+  course: number | null;
   link: GetLinkTrkData | null;
 }
 
