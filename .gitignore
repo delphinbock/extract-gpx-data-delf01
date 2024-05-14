@@ -1,2 +1,10 @@
-node_modules
-test-folder
+# Folders
+/test-folder
+/node_modules
+
+# Ignore test-related files
+/coverage.data
+/coverage/
+
+# Build files
+/dist

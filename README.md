@@ -3,6 +3,7 @@
 [![Version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&r=r&ts=1683906897&type=6e&v=2.0.0&x2=0)](https://nodejs.org/en/about/releases/)
 [![NPM version](https://img.shields.io/badge/npm-^10.7.0-red.svg?logo=npm&style=style=flat-square)](https://nodejs.org/en/about/releases/)
 [![TS version](https://img.shields.io/badge/typescript-^5.4.0-blue.svg?logo=typescript&style=style=flat-square)](https://nodejs.org/en/about/releases/)
+[![Jest version](https://img.shields.io/badge/jest-^29.7.0-white.svg?logo=jest&style=style=flat-square)](https://nodejs.org/en/about/releases/)
 [![Node version](https://img.shields.io/badge/node-^22.1.0-green.svg?logo=nodedotjs&style=style=flat-square)](https://nodejs.org/en/about/releases/)
 [![GNU License](https://img.shields.io/badge/license-GNU-blue.svg?style=style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![GPX Version](https://img.shields.io/badge/gpx_version-1.1-green.svg?style=style=flat-square)](https://www.topografix.com/gpx.asp)

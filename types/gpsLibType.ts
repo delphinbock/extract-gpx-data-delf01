@@ -604,4 +604,5 @@ export {
   StageData,
   CalculateDistanceBetweenPositions,
   TrackDistanceCalculation,
+  ReadGpxFileData
 };

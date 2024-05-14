@@ -45,21 +45,29 @@
     "average"
   ],
   "license": "GPL-3.0-or-later",
-  "main": "./extract-gpx-data-delf01.ts",
+  "main": "./dist/extract-gpx-data-delf01.ts",
+  "module": "./dist/extract-gpx-data-delf01.mjs",
   "name": "extract-gpx-data-delf01",
-  "types": "./extract-gpx-data-delf01.d.ts",
+  "types": "./dist/extract-gpx-data-delf01.d.ts",
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/delphinbock/extract-gpx-data-delf01/tree/main"
   },
   "scripts": {
-    "test": "jest",
-    "build": "npx tsc"
+    "build": "tsup",
+    "test": "jest"
   },
   "version": "1.1.8",
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
-    "jest": "^27.5.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
