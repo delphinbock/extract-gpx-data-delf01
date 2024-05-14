@@ -55,7 +55,7 @@ bun install extract-gpx-data-delf01
 `The second parameter is an boolean allowing to activate the integrated debug mode.`
 
 ```javascript
-import { DataExtractionProps } from "./types/gpsLibType";
+import { extractGpxData } from '../extract-gpx-data-delf01'
 
 const runFunction = async () => {
   // Get gpx data file
