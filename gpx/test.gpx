@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx creator="Delphin Bock" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1">
+  <metadata>
+    <name>Veloscenie</name>
+    <desc>Paris to Mont Saint-Michel, Veloscenie cycling route, containing multiples stages.</desc>
+    <author>Delphin Bock</author>
+    <copyright>public license</copyright>
+    <time>2022-01-06T23:06:00Z</time>
+    <keywords>gpx, route, stages, france, velo, paris, mont, saint-michel</keywords>
+    <extensions>
+      <myns:town>Carrouges</myns:town>
+    </extensions>
+    <bounds minlat="42.960882000" minlon="0.089178000" maxlat="42.968482000" maxlon="0.101709000" />
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>cycling</type>
+    </link>
+  </metadata>
+  <!-- WAYPOINTS -->
+  <wpt lat="48.569753" lon="-0.139466">
+    <name>Carrouges camping</name>
+    <ele>-420</ele>
+    <time>2022-01-06T23:06:00Z</time>
+    <magvar>-16.2</magvar>
+    <geoidheight>-16.2</geoidheight>
+    <cmt>Carrouge's castle</cmt>
+    <desc>Carrouge's castle is a 18th century red castle</desc>
+    <src>Garmin eTrex Venture</src>
+    <url>https://www.carrouge.com</url>
+    <urlnam>Caroruge website</urlnam></urlnam>
+    <sym>Scenic Area</sym>
+    <type>Trail Head</type>
+    <fix>2d</fix>
+    <sat>8</sat>
+    <hdop>1.4</hdop>
+    <vdop>3.2</vdop>
+    <pdop>3.2</pdop>
+    <ageofdgpsdata>21</ageofdgpsdata>
+    <dgpsid>142</dgpsid>
+    <extensions>
+      <myns:town>Carrouges</myns:town>
+    </extensions>
+    <speed>4.23</speed>
+    <course>45.2</course>
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>cycling</type>
+    </link>
+  </wpt>
+  <wpt lat="48.432084" lon="0.087055">
+    <name>Alençon</name>
+    <ele>123</ele>
+    <time>2022-01-06T11:06:00Z</time>
+    <magvar>-14.2</magvar>
+    <geoidheight>-14.2</geoidheight>
+    <cmt>Alençon's church</cmt>
+    <desc>Alençon's church is a 18th century church.</desc>
+    <src>Garmin eTrex Venture</src>
+    <url>https://www.alencon.com</url>
+    <urlname>Alençon website</urlname>
+    <sym>Scenic Area</sym>
+    <type>Trail Head</type>
+    <fix>2d</fix>
+    <sat>8</sat>
+    <hdop>1.4</hdop>
+    <vdop>3.2</vdop>
+    <pdop>3.2</pdop>
+    <ageofdgpsdata>20</ageofdgpsdata>
+    <dgpsid>141</dgpsid>
+    <extensions>
+      <myns:town>Alençon</myns:town>
+    </extensions>
+    <speed>4.23</speed>
+    <course>45.2</course>
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>cycling</type>
+    </link>
+  </wpt>
+  <!-- ROUTES -->
+  <rte>
+    <name>Veloscenie, stage 1</name>
+    <cmt>Easy route</cmt>
+    <desc>Paris to Massy route</desc>
+    <src>Garmin eTrex Venture</src>
+    <number>1</number>
+    <type>cycling</type>
+    <url>https://www.veloscenie.com</url>
+    <urlname>Veloscenie website</urlname>
+    <number>1</number>
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>sport</type>
+    </link>
+    <extensions>
+      <myns:town>Paris</myns:town>
+    </extensions>
+    <!-- ROUTE POINTS -->
+    <rtept lat="48.852936" lon="2.343239">
+      <ele>55</ele>
+      <time>2022-01-06T06:06:00Z</time>
+      <magvar>-16.2</magvar>
+      <geoidheight>-16.2</geoidheight>
+      <name>Veloscenie route stage 1</name>
+      <cmt>Paris start</cmt>
+      <desc>First stage of veloscenie</desc>
+      <src>Garmin eTrex Venture</src>
+      <link href="https://mywebsite.com">
+        <text>My Website</text>
+        <type>sport</type>
+      </link>
+      <sym>Scenic Area</sym>
+      <type>cycling</type>
+      <fix>2d</fix>
+      <sat>8</sat>
+      <hdop>1.4</hdop>
+      <vdop>3.2</vdop>
+      <pdop>1.4</pdop>
+      <ageofdgpsdata>21</ageofdgpsdata>
+      <dgpsid>142</dgpsid>
+      <extensions>
+        <myns:town>Paris</myns:town>
+      </extensions>
+      <speed>4.23</speed>
+      <course>45.2</course>
+    </rtept>
+    <rtept lat="48.730374" lon="2.272101">
+      <ele>63</ele>
+      <time>2022-01-06T08:06:00Z</time>
+      <magvar>-16.2</magvar>
+      <geoidheight>-16.2</geoidheight>
+      <name>Veloscenie route stage 2</name>
+      <cmt>City train station</cmt>
+      <desc>Veloscenie stage 2</desc>
+      <src>Garmin eTrex Venture</src>
+      <link href="https://mywebsite.com">
+        <text>My Website</text>
+        <type>sport</type>
+      </link>
+      <sym>Scenic Area</sym>
+      <type>cycling</type>
+      <fix>2d</fix>
+      <sat>8</sat>
+      <hdop>1.4</hdop>
+      <vdop>3.2</vdop>
+      <pdop>1.4</pdop>
+      <ageofdgpsdata>21</ageofdgpsdata>
+      <dgpsid>142</dgpsid>
+      <extensions>
+        <myns:town>Massy</myns:town>
+      </extensions>
+      <speed>4.23</speed>
+      <course>45.2</course>
+    </rtept>
+  </rte>
+  <!-- TRACKS -->
+  <trk>
+    <name>Paris / Massy</name>
+    <type>cycling</type>
+    <cmt>Easy way</cmt>
+    <desc>Paris to Massy</desc>
+    <src>Garmin eTrex Venture</src>
+    <url>https://www.veloscenie.com</url>
+    <urlname>Veloscenie website</urlname>
+    <number>1</number>
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>sport</type>
+    </link>
+    <extensions>
+      <myns:town>Paris</myns:town>
+    </extensions>
+    <trkseg>
+      <trkpt lat="48.855337" lon="2.345867">
+        <ele>14.44</ele>
+        <time>2022-01-06T08:06:00Z</time>
+        <magvar>1.1</magvar>
+        <geoidheight>-14</geoidheight>
+        <name>veloscenie</name>
+        <cmt>first point</cmt>
+        <desc>First stage of veloscenie</desc>
+        <src>Garmin eTrex Venture</src>
+        <url>https://www.veloscenie.com</url>
+        <urlname>Veloscenie website</urlname>
+        <sym>Scenic Area</sym>
+        <type>cycling</type>
+        <fix>2d</fix>
+        <sat>8</sat>
+        <hdop>1.4</hdop>
+        <vdop>3.2</vdop>
+        <pdop>1.4</pdop>
+        <ageofdgpsdata>21</ageofdgpsdata>
+        <dgpsid>142</dgpsid>
+        <extensions>
+          <myns:town>Paris</myns:town>
+        </extensions>
+        <speed>4.23</speed>
+        <course>45.2</course>
+      </trkpt>
+      <trkpt lat="48.442237" lon="0.702587">
+        <ele>140.44</ele>
+        <time>2022-01-06T15:06:00Z</time>
+        <magvar>1.0</magvar>
+        <geoidheight>-12</geoidheight>
+        <name>veloscenie</name>
+        <cmt>second point</cmt>
+        <desc>First stage of veloscenie</desc>
+        <src>Garmin eTrex Venture</src>
+        <url>https://www.veloscenie.com</url>
+        <urlname>Veloscenie website</urlname>
+        <sym>Scenic Area</sym>
+        <type>cycling</type>
+        <fix>2d</fix>
+        <sat>8</sat>
+        <hdop>1.4</hdop>
+        <vdop>3.2</vdop>
+        <pdop>1.4</pdop>
+        <ageofdgpsdata>21</ageofdgpsdata>
+        <dgpsid>142</dgpsid>
+        <extensions>
+          <myns:town>Paris</myns:town>
+        </extensions>
+        <speed>4.23</speed>
+        <course>45.2</course>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Massy / Rambouillet</name>
+    <type>cycling</type>
+    <cmt>Hard way</cmt>
+    <desc>Massy to Rambouillet</desc>
+    <src>Garmin eTrex Venture</src>
+    <url>https://www.veloscenie.com</url>
+    <urlname>Veloscenie website</urlname>
+    <number>1</number>
+    <link href="https://mywebsite.com">
+      <text>My Website</text>
+      <type>sport</type>
+    </link>
+    <extensions>
+      <myns:town>Massy</myns:town>
+    </extensions>
+    <trkseg>
+      <trkpt lat="48.443298" lon="0.701751">
+        <ele>1544</ele>
+        <time>2022-01-06T10:06:00Z</time>
+        <magvar>1.1</magvar>
+        <geoidheight>-14</geoidheight>
+        <name>veloscenie</name>
+        <cmt>first point</cmt>
+        <desc>Second stage of veloscenie</desc>
+        <src>Garmin eTrex Venture</src>
+        <url>https://www.veloscenie.com</url>
+        <urlname>Veloscenie website</urlname>
+        <sym>Scenic Area</sym>
+        <type>cycling</type>
+        <fix>2d</fix>
+        <sat>8</sat>
+        <hdop>1.4</hdop>
+        <vdop>3.2</vdop>
+        <pdop>1.4</pdop>
+        <ageofdgpsdata>21</ageofdgpsdata>
+        <dgpsid>142</dgpsid>
+        <extensions>
+          <myns:town>Paris</myns:town>
+        </extensions>
+        <speed>4.23</speed>
+        <course>45.2</course>
+      </trkpt>
+      <trkpt lat="48.569235" lon="-0.744897">
+        <ele>340.44</ele>
+        <time>2022-01-06T18:06:00Z</time>
+        <magvar>1.0</magvar>
+        <geoidheight>-12</geoidheight>
+        <name>veloscenie</name>
+        <cmt>second point</cmt>
+        <desc>Second stage of veloscenie</desc>
+        <src>Garmin eTrex Venture</src>
+        <url>https://www.veloscenie.com</url>
+        <urlname>Veloscenie website</urlname>
+        <sym>Scenic Area</sym>
+        <type>cycling</type>
+        <fix>2d</fix>
+        <sat>8</sat>
+        <hdop>1.4</hdop>
+        <vdop>3.2</vdop>
+        <pdop>1.4</pdop>
+        <ageofdgpsdata>21</ageofdgpsdata>
+        <dgpsid>142</dgpsid>
+        <extensions>
+          <myns:town>Paris</myns:town>
+        </extensions>
+        <speed>4.23</speed>
+        <course>45.2</course>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
